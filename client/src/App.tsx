@@ -742,20 +742,23 @@ export default function App() {
                     htmlFor="task-assignee"
                     className="block text-xs font-medium text-muted-foreground mb-2"
                   >
-                    Assignee
+                    Assignee (type or choose)
                   </label>
-                  <select
+                  <input
                     id="task-assignee"
-                    data-testid="select-task-assignee"
+                    data-testid="input-task-assignee"
+                    type="text"
+                    list="assignee-options"
                     value={newTask.assignee}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, assignee: e.target.value })
-                    }
+                    onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
+                    placeholder="Type assignee name (e.g. Sarah, Jack)..."
                     className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
-                  >
-                    <option value="Executive">Executive</option>
-                    <option value="Assistant">Assistant</option>
-                  </select>
+                    aria-required="true"
+                  />
+                  <datalist id="assignee-options">
+                    <option value="Executive" />
+                    <option value="Assistant" />
+                  </datalist>
                 </div>
                 <div>
                   <label

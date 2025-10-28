@@ -1,0 +1,71 @@
+🧭 Objective
+
+Upgrade the assignee input system so that users can type custom names (e.g. “Sarah”, “Jack”) instead of selecting only between “Executive” and “Assistant”.
+This aligns with the original intent of real-world delegation tracking and personal accountability.
+
+🧩 Implementation Amendments
+
+🔤 Enable Freeform Assignee Entry
+
+Replace the current <select> element for assignee (inside the “Create New Task” form) with a hybrid input field that supports both typing and prefill options.
+
+Modify this JSX block in client/src/App.tsx (around line 730–745):
+
+Replace: <select
+  id="task-assignee"
+  data-testid="select-task-assignee"
+  value={newTask.assignee}
+  onChange={(e) =>
+    setNewTask({ ...newTask, assignee: e.target.value })
+  }
+  className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+>
+  <option value="Executive">Executive</option>
+  <option value="Assistant">Assistant</option>
+</select>
+With: <input
+  id="task-assignee"
+  data-testid="input-task-assignee"
+  type="text"
+  list="assignee-options"
+  value={newTask.assignee}
+  onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
+  placeholder="Type assignee name (e.g. Sarah, Jack)..."
+  className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+/>
+<datalist id="assignee-options">
+  <option value="Executive" />
+  <option value="Assistant" />
+</datalist>
+✅ This preserves the existing quick defaults (“Executive”, “Assistant”)
+✅ Allows new custom entries dynamically
+✅ Keeps backward compatibility with previously stored task data
+
+💾 Data Integrity Update
+
+Ensure the assignee field (typed string) is stored as-is in localStorage.
+
+No schema change is required — the Task type already supports assignee: string.
+
+🎨 UI & Accessibility Polish
+
+Add label context: <label htmlFor="task-assignee" className="block text-xs font-medium text-muted-foreground mb-2">
+  Assignee (type or choose)
+</label>
+Verify that placeholder text and ARIA roles remain consistent (aria-required stays true).
+
+✅ Acceptance Criteria
+
+Users can now manually type any name in the “Assignee” field.
+
+Typing triggers real-time updates to the newTask state.
+
+Previously saved tasks with “Executive” or “Assistant” remain unaffected.
+
+No validation or crash occurs when entering new names.
+
+UI maintains minimal aesthetic and spacing parity with other inputs.
+
+📁 File to Edit
+
+client/src/App.tsx
