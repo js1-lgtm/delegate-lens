@@ -503,8 +503,8 @@ export default function App() {
 
     const task: Task = {
       id: Date.now().toString(),
-      title: newTask.title,
-      assignee: newTask.assignee,
+      title: newTask.title.trim(),
+      assignee: newTask.assignee.trim() || "Unassigned",
       status: newTask.status,
       priority: newTask.priority,
       lastUpdated: new Date().toISOString(),
