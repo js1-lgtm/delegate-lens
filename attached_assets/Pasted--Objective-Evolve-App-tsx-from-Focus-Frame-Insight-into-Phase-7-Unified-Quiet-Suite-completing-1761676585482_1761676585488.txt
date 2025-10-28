@@ -1,0 +1,93 @@
+🧭 Objective
+
+Evolve App.tsx from Focus Frame Insight into Phase 7 — Unified Quiet Suite, completing the first full-cycle release candidate.
+Maintain all calm-interface and cognitive-clarity foundations while introducing Presentation Mode for executive use.
+
+🔧 Functional & UX Amendments
+
+Introduce “Presentation Mode” (Final Layer)
+
+Add a subtle toggle button labeled “Present” (CheckCircle2 icon) beside Insight.
+
+When active:
+
+Hide all UI controls except the task grid and metrics (Trace Panel visible by default).
+
+Enlarge typography slightly (text-[1.05rem] titles).
+
+Apply a gentle fade-in animation on each card (transition-opacity duration-300 ease-out).
+
+Display header text only as: Delegate Lens · Executive Overview
+Persist state in localStorage("delegate-lens-presentation-mode").
+
+Escape key exits Presentation Mode.
+
+Merge Trace and Insight Panels During Presentation
+
+When Presentation Mode is on:
+
+Combine Trace Metrics + Focus Frame Insight into a single composite panel at bottom center.
+
+Layout two columns:
+Left: Trace metrics.
+Right: Insight summary (topSwitchTasks[0], mostRecentTask, and total switches).
+
+Typography: text-xs text-muted-foreground tracking-tight leading-snug.
+
+Micro-Refinements for Calm Hierarchy
+
+Slightly increase card corner radius → rounded-xl.
+
+Change muted gray borders to border-border/20 for softer edges.
+
+Reduce vertical spacing between sections by 8 px.
+
+In Trace and Insight panels, align text left for readability in executive contexts.
+
+Accessibility & ARIA Completeness
+
+Add role="dialog" and aria-modal="true" to Insight overlay.
+
+Add role="status" to Trace Panel metrics container for live updates.
+
+Ensure Presentation Mode toggles announce state via aria-pressed.
+
+Performance & Data Integrity Enhancements
+
+On mount, check for old trace/insight data > 7 days and clear automatically.
+
+Debounce localStorage writes (150 ms) to reduce I/O on rapid status changes.
+
+Optional Visual Cue for Focus Flow
+
+Add a subtle animated underline (scale-x transition) on the active filter button.
+
+Keep understated (opacity-30).
+
+🎨 Design Principles to Preserve
+
+Animation ≤ 300 ms with ease-out.
+
+Maintain neutral palette and quiet rhythm.
+
+Typography > color for emphasis.
+
+No new icons or hues introduced.
+
+All components remain accessible and keyboard-navigable.
+
+📁 File to Edit
+
+client/src/App.tsx
+
+✅ Acceptance Criteria
+
+Presentation Mode toggles cleanly and persists state.
+
+Combined Trace + Insight Panel appears correctly in Presentation Mode.
+
+All ARIA roles and Escape behaviors work flawlessly.
+
+Layout and animation transitions preserve the “quiet luxury” feel.
+
+No console errors or state loss on reload.

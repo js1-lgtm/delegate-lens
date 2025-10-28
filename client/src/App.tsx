@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { CheckCircle2, Clock, AlertCircle, Plus, Focus, Activity } from "lucide-react";
 
 const STORAGE_KEY = "delegate-lens-tasks";
@@ -8,6 +8,8 @@ const TRACE_VISIBLE_KEY = "delegate-lens-trace-visible";
 const INSIGHT_KEY = "delegate-lens-insight-data";
 const INSIGHT_VISIBLE_KEY = "delegate-lens-insight-visible";
 const HISTORY_VISIBLE_KEY = "delegate-lens-history-visible";
+const PRESENTATION_MODE_KEY = "delegate-lens-presentation-mode";
+const FILTER_KEY = "delegate-lens-filter";
 
 type Task = {
   id: string;
@@ -132,6 +134,22 @@ function formatHistoryDate(isoDate: string): string {
   return `${month}/${day}`;
 }
 
+function isDataOlderThan7Days(isoDate: string): boolean {
+  const dataDate = new Date(isoDate);
+  const now = new Date();
+  const diffMs = now.getTime() - dataDate.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  return diffDays > 7;
+}
+
+function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): (...args: Parameters<T>) => void {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
@@ -142,7 +160,14 @@ export default function App() {
     }
   });
 
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState(() => {
+    try {
+      const stored = localStorage.getItem(FILTER_KEY);
+      return stored || "All";
+    } catch {
+      return "All";
+    }
+  });
   const [focusMode, setFocusMode] = useState(() => {
     try {
       const stored = localStorage.getItem(FOCUS_MODE_KEY);
@@ -162,6 +187,12 @@ export default function App() {
       if (data.lastTraceDate !== today) {
         return { tasksUpdatedToday: 0, lastTraceDate: today };
       }
+      
+      // Clear if older than 7 days
+      if (isDataOlderThan7Days(data.lastTraceDate)) {
+        return { tasksUpdatedToday: 0, lastTraceDate: today };
+      }
+      
       return data;
     } catch {
       return { tasksUpdatedToday: 0, lastTraceDate: getTodayDateString() };
@@ -189,7 +220,17 @@ export default function App() {
   const [insightData, setInsightData] = useState<InsightData | null>(() => {
     try {
       const stored = localStorage.getItem(INSIGHT_KEY);
-      return stored ? JSON.parse(stored) : null;
+      if (!stored) return null;
+      
+      const data = JSON.parse(stored);
+      
+      // Clear if older than 7 days
+      if (data.generatedAt && isDataOlderThan7Days(data.generatedAt)) {
+        localStorage.removeItem(INSIGHT_KEY);
+        return null;
+      }
+      
+      return data;
     } catch {
       return null;
     }
@@ -204,6 +245,15 @@ export default function App() {
     }
   });
 
+  const [presentationMode, setPresentationMode] = useState(() => {
+    try {
+      const stored = localStorage.getItem(PRESENTATION_MODE_KEY);
+      return stored === "true";
+    } catch {
+      return false;
+    }
+  });
+
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
@@ -214,68 +264,150 @@ export default function App() {
 
   const insightOverlayRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    } catch (error) {
-      console.error("Failed to save tasks:", error);
-    }
-  }, [tasks]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(FOCUS_MODE_KEY, focusMode.toString());
-    } catch (error) {
-      console.error("Failed to save focus mode:", error);
-    }
-  }, [focusMode]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(TRACE_KEY, JSON.stringify(traceData));
-    } catch (error) {
-      console.error("Failed to save trace data:", error);
-    }
-  }, [traceData]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(TRACE_VISIBLE_KEY, traceVisible.toString());
-    } catch (error) {
-      console.error("Failed to save trace visibility:", error);
-    }
-  }, [traceVisible]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(INSIGHT_VISIBLE_KEY, insightVisible.toString());
-    } catch (error) {
-      console.error("Failed to save insight visibility:", error);
-    }
-  }, [insightVisible]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(HISTORY_VISIBLE_KEY, JSON.stringify(historyVisible));
-    } catch (error) {
-      console.error("Failed to save history visibility:", error);
-    }
-  }, [historyVisible]);
-
-  useEffect(() => {
-    if (insightData) {
+  // Debounced localStorage save functions
+  const debouncedSaveTasks = useCallback(
+    debounce((tasks: Task[]) => {
       try {
-        localStorage.setItem(INSIGHT_KEY, JSON.stringify(insightData));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch (error) {
+        console.error("Failed to save tasks:", error);
+      }
+    }, 150),
+    []
+  );
+
+  const debouncedSaveTraceData = useCallback(
+    debounce((data: TraceData) => {
+      try {
+        localStorage.setItem(TRACE_KEY, JSON.stringify(data));
+      } catch (error) {
+        console.error("Failed to save trace data:", error);
+      }
+    }, 150),
+    []
+  );
+
+  const debouncedSaveHistoryVisible = useCallback(
+    debounce((visible: Record<string, boolean>) => {
+      try {
+        localStorage.setItem(HISTORY_VISIBLE_KEY, JSON.stringify(visible));
+      } catch (error) {
+        console.error("Failed to save history visibility:", error);
+      }
+    }, 150),
+    []
+  );
+
+  const debouncedSaveFilter = useCallback(
+    debounce((filter: string) => {
+      try {
+        localStorage.setItem(FILTER_KEY, filter);
+      } catch (error) {
+        console.error("Failed to save filter:", error);
+      }
+    }, 150),
+    []
+  );
+
+  const debouncedSaveFocusMode = useCallback(
+    debounce((mode: boolean) => {
+      try {
+        localStorage.setItem(FOCUS_MODE_KEY, mode.toString());
+      } catch (error) {
+        console.error("Failed to save focus mode:", error);
+      }
+    }, 150),
+    []
+  );
+
+  const debouncedSaveTraceVisible = useCallback(
+    debounce((visible: boolean) => {
+      try {
+        localStorage.setItem(TRACE_VISIBLE_KEY, visible.toString());
+      } catch (error) {
+        console.error("Failed to save trace visibility:", error);
+      }
+    }, 150),
+    []
+  );
+
+  const debouncedSaveInsightVisible = useCallback(
+    debounce((visible: boolean) => {
+      try {
+        localStorage.setItem(INSIGHT_VISIBLE_KEY, visible.toString());
+      } catch (error) {
+        console.error("Failed to save insight visibility:", error);
+      }
+    }, 150),
+    []
+  );
+
+  const debouncedSavePresentationMode = useCallback(
+    debounce((mode: boolean) => {
+      try {
+        localStorage.setItem(PRESENTATION_MODE_KEY, mode.toString());
+      } catch (error) {
+        console.error("Failed to save presentation mode:", error);
+      }
+    }, 150),
+    []
+  );
+
+  const debouncedSaveInsightData = useCallback(
+    debounce((data: InsightData) => {
+      try {
+        localStorage.setItem(INSIGHT_KEY, JSON.stringify(data));
       } catch (error) {
         console.error("Failed to save insight data:", error);
       }
+    }, 150),
+    []
+  );
+
+  useEffect(() => {
+    debouncedSaveTasks(tasks);
+  }, [tasks, debouncedSaveTasks]);
+
+  useEffect(() => {
+    debouncedSaveFilter(filter);
+  }, [filter, debouncedSaveFilter]);
+
+  useEffect(() => {
+    debouncedSaveFocusMode(focusMode);
+  }, [focusMode, debouncedSaveFocusMode]);
+
+  useEffect(() => {
+    debouncedSaveTraceData(traceData);
+  }, [traceData, debouncedSaveTraceData]);
+
+  useEffect(() => {
+    debouncedSaveTraceVisible(traceVisible);
+  }, [traceVisible, debouncedSaveTraceVisible]);
+
+  useEffect(() => {
+    debouncedSaveInsightVisible(insightVisible);
+  }, [insightVisible, debouncedSaveInsightVisible]);
+
+  useEffect(() => {
+    debouncedSaveHistoryVisible(historyVisible);
+  }, [historyVisible, debouncedSaveHistoryVisible]);
+
+  useEffect(() => {
+    debouncedSavePresentationMode(presentationMode);
+  }, [presentationMode, debouncedSavePresentationMode]);
+
+  useEffect(() => {
+    if (insightData) {
+      debouncedSaveInsightData(insightData);
     }
-  }, [insightData]);
+  }, [insightData, debouncedSaveInsightData]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (insightVisible) {
+        if (presentationMode) {
+          setPresentationMode(false);
+        } else if (insightVisible) {
           setInsightVisible(false);
         } else if (traceVisible) {
           setTraceVisible(false);
@@ -285,7 +417,7 @@ export default function App() {
     
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [traceVisible, insightVisible]);
+  }, [traceVisible, insightVisible, presentationMode]);
 
   // Focus trap for insight overlay
   useEffect(() => {
@@ -423,6 +555,14 @@ export default function App() {
     }));
   };
 
+  const togglePresentationMode = () => {
+    setPresentationMode((prev) => !prev);
+    // Auto-show trace in presentation mode
+    if (!presentationMode) {
+      setTraceVisible(true);
+    }
+  };
+
   const counts = {
     total: tasks.length,
     "In Progress": tasks.filter((t: Task) => t.status === "In Progress").length,
@@ -437,57 +577,105 @@ export default function App() {
   
   const focusUpdates = tasks.filter((t) => t.focusActiveDuringUpdate === true).length;
 
+  // Generate fresh insight data for presentation mode
+  useEffect(() => {
+    if (presentationMode && !insightData) {
+      const sortedBySwitch = [...tasks].sort(
+        (a, b) => (b.contextSwitchCount || 0) - (a.contextSwitchCount || 0)
+      );
+      const topThree = sortedBySwitch.slice(0, 3).map((t) => t.title);
+      
+      const mostRecent = [...tasks].sort(
+        (a, b) => new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime()
+      )[0];
+
+      const totalSwitches = tasks.reduce((sum, t) => sum + (t.contextSwitchCount || 0), 0);
+
+      setInsightData({
+        topSwitchTasks: topThree,
+        mostRecentTask: mostRecent?.title || "None",
+        contextSwitchTotal: totalSwitches,
+        generatedAt: new Date().toISOString(),
+      });
+    }
+  }, [presentationMode, tasks, insightData]);
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-6xl mx-auto px-6 py-12">
-        <header className="mb-8 flex items-start justify-between">
+        <header className={`flex items-start justify-between ${presentationMode ? 'mb-6' : 'mb-8'}`}>
           <div>
             <h1 className="text-2xl font-semibold text-foreground mb-1 tracking-tight">
-              Delegate Lens
+              {presentationMode ? 'Delegate Lens · Executive Overview' : 'Delegate Lens'}
             </h1>
-            <p className="text-sm text-muted-foreground/80">
-              Track delegated tasks between executive and assistant
-            </p>
+            {!presentationMode && (
+              <p className="text-sm text-muted-foreground/80">
+                Track delegated tasks between executive and assistant
+              </p>
+            )}
           </div>
-          <div className="flex items-center gap-2">
+          {!presentationMode && (
+            <div className="flex items-center gap-2">
+              <button
+                data-testid="button-present"
+                onClick={togglePresentationMode}
+                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/20 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+                aria-label="Enter presentation mode"
+                aria-pressed={presentationMode}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Present
+              </button>
+              <button
+                data-testid="button-insight"
+                onClick={toggleInsight}
+                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/20 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+                aria-label={insightVisible ? "Close insight overlay" : "Open insight overlay"}
+                aria-controls="insight-overlay"
+                aria-expanded={insightVisible}
+              >
+                <Activity className="w-4 h-4" />
+                Insight
+              </button>
+              <button
+                data-testid="button-focus-mode"
+                onClick={toggleFocusMode}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border/20 transition-all duration-200 ease-out ${
+                  focusMode
+                    ? "bg-foreground text-background border-foreground"
+                    : "bg-background text-foreground hover:bg-muted"
+                }`}
+                aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
+                aria-pressed={focusMode}
+              >
+                <Focus className="w-4 h-4" />
+                Focus
+              </button>
+              <button
+                data-testid="button-new-task"
+                onClick={() => setShowNewTaskForm(!showNewTaskForm)}
+                className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out"
+                aria-label="Create new task"
+              >
+                <Plus className="w-4 h-4" />
+                New Task
+              </button>
+            </div>
+          )}
+          {presentationMode && (
             <button
-              data-testid="button-insight"
-              onClick={toggleInsight}
-              className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
-              aria-label={insightVisible ? "Close insight overlay" : "Open insight overlay"}
-              aria-controls="insight-overlay"
-              aria-expanded={insightVisible}
+              data-testid="button-exit-presentation"
+              onClick={togglePresentationMode}
+              className="px-4 py-2 bg-background text-foreground border border-border/20 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+              aria-label="Exit presentation mode"
+              aria-pressed={presentationMode}
             >
-              <Activity className="w-4 h-4" />
-              Insight
+              Exit Presentation
             </button>
-            <button
-              data-testid="button-focus-mode"
-              onClick={toggleFocusMode}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ease-out ${
-                focusMode
-                  ? "bg-foreground text-background border-foreground"
-                  : "bg-background text-foreground border-border hover:bg-muted"
-              }`}
-              aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
-              aria-pressed={focusMode}
-            >
-              <Focus className="w-4 h-4" />
-              Focus
-            </button>
-            <button
-              data-testid="button-new-task"
-              onClick={() => setShowNewTaskForm(!showNewTaskForm)}
-              className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out"
-              aria-label="Create new task"
-            >
-              <Plus className="w-4 h-4" />
-              New Task
-            </button>
-          </div>
+          )}
         </header>
 
-        {focusMode && (
+        {focusMode && !presentationMode && (
           <div
             data-testid="banner-focus-mode"
             className="mb-6 text-center py-2 px-4 bg-muted rounded-lg"
@@ -498,10 +686,10 @@ export default function App() {
           </div>
         )}
 
-        {showNewTaskForm && (
+        {showNewTaskForm && !presentationMode && (
           <div
             data-testid="form-new-task"
-            className="mb-8 p-6 bg-muted/30 border border-muted rounded-lg"
+            className="mb-6 p-6 bg-muted/30 border border-border/20 rounded-lg"
           >
             <h3 className="text-sm font-medium text-foreground mb-4">
               Create New Task
@@ -612,7 +800,7 @@ export default function App() {
                       priority: "Normal",
                     });
                   }}
-                  className="px-4 py-2 bg-background text-foreground border border-border rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+                  className="px-4 py-2 bg-background text-foreground border border-border/20 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
                   aria-label="Cancel new task"
                 >
                   Cancel
@@ -622,8 +810,8 @@ export default function App() {
           </div>
         )}
 
-        {!focusMode && (
-          <div className="mb-8 flex gap-3 flex-wrap">
+        {!focusMode && !presentationMode && (
+          <div className="mb-6 flex gap-3 flex-wrap">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Total
@@ -665,23 +853,31 @@ export default function App() {
           </div>
         )}
 
-        <div className="flex gap-2 mb-8 flex-wrap">
-          {["All", "In Progress", "Done", "Blocked"].map((f) => (
-            <button
-              key={f}
-              data-testid={`button-filter-${f.toLowerCase().replace(" ", "-")}`}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 ease-out ${
-                filter === f
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-foreground border-border hover:bg-muted"
-              }`}
-              aria-label={`Filter tasks by ${f}`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
+        {!presentationMode && (
+          <div className="flex gap-2 mb-6 flex-wrap">
+            {["All", "In Progress", "Done", "Blocked"].map((f) => (
+              <button
+                key={f}
+                data-testid={`button-filter-${f.toLowerCase().replace(" ", "-")}`}
+                onClick={() => setFilter(f)}
+                className={`relative px-3 py-1.5 rounded-lg text-sm font-medium border border-border/20 transition-all duration-200 ease-out overflow-visible ${
+                  filter === f
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-foreground hover:bg-muted"
+                }`}
+                aria-label={`Filter tasks by ${f}`}
+              >
+                {f}
+                {filter === f && (
+                  <span 
+                    data-testid={`underline-filter-${f.toLowerCase().replace(" ", "-")}`}
+                    className="absolute -bottom-[2px] left-0 right-0 h-[2px] bg-primary-foreground opacity-30 transform scale-x-100 transition-transform duration-200 ease-out"
+                  ></span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
         <h2 className="sr-only">Task Board</h2>
         <div
@@ -701,7 +897,10 @@ export default function App() {
               <div
                 key={task.id}
                 data-testid={`card-task-${task.id}`}
-                className="bg-card border border-muted p-4 rounded-lg hover:border-foreground/10 hover:shadow-none transition-all duration-200 ease-out"
+                className={`bg-card border border-border/20 p-4 rounded-xl hover:border-foreground/10 hover:shadow-none transition-all duration-200 ease-out ${
+                  presentationMode ? 'opacity-0 animate-fade-in' : ''
+                }`}
+                style={presentationMode ? { animation: 'fadeIn 300ms ease-out forwards' } : undefined}
               >
                 <div className="mb-4">
                   <div className="flex items-start gap-2 mb-2">
@@ -711,7 +910,7 @@ export default function App() {
                     ></div>
                     <h2
                       className={`${
-                        focusMode ? "text-[1.1rem]" : "text-base"
+                        presentationMode ? "text-[1.05rem]" : focusMode ? "text-[1.1rem]" : "text-base"
                       } font-semibold text-card-foreground flex-1 leading-tight`}
                     >
                       {task.title}
@@ -724,7 +923,7 @@ export default function App() {
                     {getRelativeTime(task.lastUpdated)}
                   </p>
                   <div className="flex gap-2">
-                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-muted">
+                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/20">
                       {task.assignee}
                     </span>
                   </div>
@@ -740,21 +939,23 @@ export default function App() {
                     </span>
                   </div>
 
-                  <select
-                    data-testid={`select-status-${task.id}`}
-                    value={task.status}
-                    onChange={(e) => updateStatus(task.id, e.target.value)}
-                    className="text-xs border border-input bg-background rounded-md px-2 py-1.5 text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
-                    aria-label={`Change status for ${task.title}`}
-                  >
-                    <option value="In Progress">In Progress</option>
-                    <option value="Done">Done</option>
-                    <option value="Blocked">Blocked</option>
-                  </select>
+                  {!presentationMode && (
+                    <select
+                      data-testid={`select-status-${task.id}`}
+                      value={task.status}
+                      onChange={(e) => updateStatus(task.id, e.target.value)}
+                      className="text-xs border border-input bg-background rounded-md px-2 py-1.5 text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+                      aria-label={`Change status for ${task.title}`}
+                    >
+                      <option value="In Progress">In Progress</option>
+                      <option value="Done">Done</option>
+                      <option value="Blocked">Blocked</option>
+                    </select>
+                  )}
                 </div>
 
                 {/* View History Link */}
-                {task.history && task.history.length > 0 && (
+                {!presentationMode && task.history && task.history.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-border/30">
                     <button
                       data-testid={`button-view-history-${task.id}`}
@@ -789,11 +990,13 @@ export default function App() {
       </div>
 
       {/* Insight Overlay */}
-      {insightVisible && (
+      {insightVisible && !presentationMode && (
         <div
           id="insight-overlay"
           ref={insightOverlayRef}
           data-testid="overlay-insight"
+          role="dialog"
+          aria-modal="true"
           className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-6"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -801,14 +1004,14 @@ export default function App() {
             }
           }}
         >
-          <div className="bg-card border border-muted rounded-lg shadow-lg p-6 max-w-md w-full">
+          <div className="bg-card border border-border/20 rounded-lg shadow-lg p-6 max-w-md w-full">
             <h2 className="sr-only">Focus Frame Insights</h2>
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-foreground mb-4">
                 Focus Frame Insights
               </h3>
 
-              <div className="space-y-4">
+              <div className="space-y-4 text-left">
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
                     Top 3 Tasks by Context Switch
@@ -851,31 +1054,15 @@ export default function App() {
         </div>
       )}
 
-      {/* Cognitive Trace Panel */}
-      <div className={`fixed bottom-0 left-0 right-0 transition-opacity duration-200 ease-out ${insightVisible ? 'opacity-40' : 'opacity-100'}`}>
-        <button
-          data-testid="button-toggle-trace"
-          onClick={toggleTrace}
-          className="w-full bg-muted/30 border-t border-border/40 py-2 px-4 text-xs text-muted-foreground hover:bg-muted/50 transition-all duration-200 ease-out"
-          aria-label={traceVisible ? "Hide cognitive trace" : "Show cognitive trace"}
-          aria-controls="cognitive-trace-panel"
-          aria-expanded={traceVisible}
-        >
-          <div className="max-w-6xl mx-auto flex items-center justify-center gap-2">
-            <Activity className="w-3.5 h-3.5" />
-            <span>Trace</span>
-          </div>
-        </button>
-
-        {traceVisible && (
-          <div
-            id="cognitive-trace-panel"
-            data-testid="panel-cognitive-trace"
-            className="bg-muted/30 border-t border-border/40 rounded-t-lg"
-          >
-            <div className="max-w-6xl mx-auto px-4 py-3">
-              <h2 className="sr-only">Cognitive Trace Metrics</h2>
-              <div className="flex flex-wrap gap-6 text-xs text-muted-foreground font-normal tracking-tight">
+      {/* Presentation Mode: Merged Trace + Insight Panel */}
+      {presentationMode && (
+        <div className="fixed bottom-0 left-0 right-0 bg-muted/30 border-t border-border/40 rounded-t-lg">
+          <div className="max-w-6xl mx-auto px-4 py-3" role="status">
+            <h2 className="sr-only">Cognitive Trace Metrics</h2>
+            <div className="grid grid-cols-2 gap-8 text-xs text-muted-foreground font-normal tracking-tight leading-snug">
+              {/* Left Column: Trace Metrics */}
+              <div className="space-y-2 text-left">
+                <p className="uppercase tracking-wide mb-3 font-medium">Trace Metrics</p>
                 <div className="flex items-center gap-2">
                   <span className="uppercase tracking-wide">Avg Context Switch</span>
                   <span className="font-semibold text-foreground" data-testid="metric-avg-context-switch">
@@ -895,10 +1082,98 @@ export default function App() {
                   </span>
                 </div>
               </div>
+
+              {/* Right Column: Insight Summary */}
+              <div className="space-y-2 text-left">
+                <p className="uppercase tracking-wide mb-3 font-medium">Focus Insights</p>
+                <div>
+                  <span className="uppercase tracking-wide">Top Task</span>
+                  <p className="text-sm text-foreground mt-1">
+                    {insightData?.topSwitchTasks?.[0] || 'None'}
+                  </p>
+                </div>
+                <div className="mt-2">
+                  <span className="uppercase tracking-wide">Most Recent</span>
+                  <p className="text-sm text-foreground mt-1">
+                    {insightData?.mostRecentTask || 'None'}
+                  </p>
+                </div>
+                <div className="mt-2">
+                  <span className="uppercase tracking-wide">Total Switches</span>
+                  <span className="font-semibold text-foreground ml-2">
+                    {insightData?.contextSwitchTotal || 0}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Regular Trace Panel (non-presentation mode) */}
+      {!presentationMode && (
+        <div className={`fixed bottom-0 left-0 right-0 transition-opacity duration-200 ease-out ${insightVisible ? 'opacity-40' : 'opacity-100'}`}>
+          <button
+            data-testid="button-toggle-trace"
+            onClick={toggleTrace}
+            className="w-full bg-muted/30 border-t border-border/40 py-2 px-4 text-xs text-muted-foreground hover:bg-muted/50 transition-all duration-200 ease-out"
+            aria-label={traceVisible ? "Hide cognitive trace" : "Show cognitive trace"}
+            aria-controls="cognitive-trace-panel"
+            aria-expanded={traceVisible}
+          >
+            <div className="max-w-6xl mx-auto flex items-center justify-center gap-2">
+              <Activity className="w-3.5 h-3.5" />
+              <span>Trace</span>
+            </div>
+          </button>
+
+          {traceVisible && (
+            <div
+              id="cognitive-trace-panel"
+              data-testid="panel-cognitive-trace"
+              className="bg-muted/30 border-t border-border/40 rounded-t-lg"
+              role="status"
+            >
+              <div className="max-w-6xl mx-auto px-4 py-3">
+                <h2 className="sr-only">Cognitive Trace Metrics</h2>
+                <div className="flex flex-wrap gap-6 text-xs text-muted-foreground font-normal tracking-tight text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="uppercase tracking-wide">Avg Context Switch</span>
+                    <span className="font-semibold text-foreground" data-testid="metric-avg-context-switch">
+                      {avgContextSwitch}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="uppercase tracking-wide">Focus Updates</span>
+                    <span className="font-semibold text-foreground" data-testid="metric-focus-updates">
+                      {focusUpdates}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="uppercase tracking-wide">Updated Today</span>
+                    <span className="font-semibold text-foreground" data-testid="metric-updated-today">
+                      {traceData.tasksUpdatedToday}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }
