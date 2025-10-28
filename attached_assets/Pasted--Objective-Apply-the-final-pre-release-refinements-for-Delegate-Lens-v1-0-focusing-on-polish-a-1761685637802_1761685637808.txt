@@ -1,0 +1,69 @@
+🧭 Objective
+
+Apply the final pre-release refinements for Delegate Lens v1.0 — focusing on polish, accessibility, performance hygiene, and cohesive presentation fidelity.
+These changes prepare the build for production sign-off.
+
+🧩 Implementation Amendments
+1. 🧼 General Code Hygiene & Readability
+
+Run Prettier or equivalent formatting across the file to ensure consistent indentation and quote style.
+
+Confirm there are no unused imports (useCallback, useRef, etc.) and no console warnings in build.
+
+Confirm that strict TypeScript mode yields no errors.
+
+2. ⚡ Performance & Debounce Efficiency
+
+Replace all current 150 ms debounce delays with 100 ms for smoother UI updates while maintaining efficiency. debounce((...), 100)
+Verify that no redundant re-renders occur when toggling focusMode, traceVisible, insightVisible, or presentationMode.
+
+3. 🎨 Visual & UX Refinements
+
+Add a slight shadow to the main cards for improved depth contrast: className="bg-card border border-border/30 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 ease-out"
+In presentation mode, slightly increase font size for key metrics (bottom panel): text-[13px] -> text-[14px]
+(only within the .grid-cols-2 presentation metrics section).
+
+Add cursor-default to non-interactive text metrics (to avoid the text-selection flicker).
+
+4. ♿ Accessibility & ARIA Validation
+
+Ensure all ARIA labels use proper verbs and referents (e.g., “Enter presentation mode”, “Exit presentation mode”, “Close insight overlay”).
+
+Add role="region" and aria-label="Task board" to the task grid container for enhanced screen reader navigation: <div
+  className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+  role="region"
+  aria-label="Task board"
+  aria-live="polite"
+>
+Verify that when overlays are open, background elements are inert (not tabbable).
+
+5. 💾 Data Consistency Check
+
+Ensure daily reset logic for traceData is tested by simulating date change — confirm that values reset cleanly.
+
+Verify that insightData correctly regenerates after 7 days (no stale data in localStorage).
+
+6. 🪞 Branding & Version Tag
+
+Update the footer line in presentation mode to include the build number and release tag: Delegate Lens · v1.0 · Cognitive Clarity Suite · Release Candidate R1
+Confirm this text is centered and uses tracking-widest text-muted-foreground/50. ✅ Acceptance Criteria
+
+No lint, console, or TypeScript errors.
+
+All visual states (normal, focus, insight, presentation) behave consistently with smooth transitions.
+
+Overlay accessibility and keyboard navigation are confirmed functional.
+
+LocalStorage persistence and daily reset work as expected.
+
+Presentation mode reads and looks refined (metric readability, spacing, visual calm).
+
+Footer includes correct version tag and aesthetic alignment.
+
+📁 File to Edit
+
+client/src/App.tsx
+
+🧾 Commit Tag
+
+release: finalize v1.0 polish, accessibility & presentation refinements

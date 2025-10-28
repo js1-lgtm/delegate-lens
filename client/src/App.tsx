@@ -275,7 +275,7 @@ export default function App() {
       } catch (error) {
         console.error("Failed to save tasks:", error);
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -286,7 +286,7 @@ export default function App() {
       } catch (error) {
         console.error("Failed to save trace data:", error);
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -297,7 +297,7 @@ export default function App() {
       } catch (error) {
         console.error("Failed to save history visibility:", error);
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -308,7 +308,7 @@ export default function App() {
       } catch (error) {
         console.error("Failed to save filter:", error);
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -319,7 +319,7 @@ export default function App() {
       } catch (error) {
         console.error("Failed to save focus mode:", error);
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -330,7 +330,7 @@ export default function App() {
       } catch (error) {
         console.error("Failed to save trace visibility:", error);
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -341,7 +341,7 @@ export default function App() {
       } catch (error) {
         console.error("Failed to save insight visibility:", error);
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -352,7 +352,7 @@ export default function App() {
       } catch (error) {
         console.error("Failed to save presentation mode:", error);
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -363,7 +363,7 @@ export default function App() {
       } catch (error) {
         console.error("Failed to save insight data:", error);
       }
-    }, 150),
+    }, 100),
     []
   );
 
@@ -906,6 +906,8 @@ export default function App() {
         <h2 className="sr-only">Task Board</h2>
         <div
           className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+          role="region"
+          aria-label="Task board"
           aria-live="polite"
           aria-atomic="false"
         >
@@ -921,7 +923,7 @@ export default function App() {
               <div
                 key={task.id}
                 data-testid={`card-task-${task.id}`}
-                className={`bg-card border border-border/30 p-5 rounded-xl hover:border-foreground/10 hover:shadow-sm transition-shadow transition-all duration-200 ease-out ${
+                className={`bg-card border border-border/30 p-5 rounded-xl shadow-sm hover:shadow-md hover:border-foreground/10 transition-shadow transition-all duration-200 ease-out ${
                   presentationMode ? 'opacity-0 animate-fade-in' : ''
                 }`}
                 style={presentationMode ? { animation: 'fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards' } : undefined}
@@ -1083,7 +1085,7 @@ export default function App() {
         <div className="fixed bottom-0 left-0 right-0 bg-muted/30 border-t border-border/40 rounded-t-lg">
           <div className="max-w-6xl mx-auto px-4 py-3" role="status" aria-live="polite">
             <h2 className="sr-only">Cognitive Trace Metrics</h2>
-            <div className="grid grid-cols-2 gap-8 text-[12px] text-muted-foreground font-normal tracking-tight leading-snug">
+            <div className="grid grid-cols-2 gap-8 text-[14px] text-muted-foreground font-normal tracking-tight leading-snug cursor-default">
               {/* Left Column: Trace Metrics */}
               <div className="space-y-2 text-left">
                 <p className="uppercase tracking-wide mb-3 font-medium">Trace Metrics</p>
@@ -1133,7 +1135,7 @@ export default function App() {
           </div>
           {/* Brand Signature Footer */}
           <div className="text-[10px] text-muted-foreground/50 text-center py-1 tracking-widest uppercase">
-            Delegate Lens · v1.0 · Cognitive Clarity Suite
+            Delegate Lens · v1.0 · Cognitive Clarity Suite · Release Candidate R1
           </div>
         </div>
       )}
