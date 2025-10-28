@@ -96,8 +96,8 @@ const priorityConfig = {
     label: "text-slate-600",
   },
   Low: {
-    dot: "bg-blue-500",
-    label: "text-blue-600",
+    dot: "bg-green-500",
+    label: "text-green-600",
   },
 };
 
@@ -949,9 +949,6 @@ export default function App() {
                   <div className="flex flex-col gap-1 ml-4 mb-2">
                     <span className="text-[13px] font-medium text-muted-foreground/80">
                       Assigned to: <span className="text-foreground font-semibold">{task.assignee}</span>
-                    </span>
-                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/30 w-fit">
-                      {task.assignee}
                     </span>
                   </div>
                 </div>
