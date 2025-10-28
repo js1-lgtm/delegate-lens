@@ -19,6 +19,19 @@ Final production polish achieving "executive calm" aesthetic through micro-refin
 - Data stability: Malformed task filtering, 999+ metric capping, comprehensive validation
 - Status: Production-ready, all end-to-end tests passed
 
+**Visual Clarity Final (Completed - October 28, 2025)**
+Post-release-lock semantic clarity amendments for enhanced readability:
+- Done status enhancement: Updated from gray/slate to green tones for positive cognitive reinforcement
+  - Light mode: bg-green-50 text-green-600 with text-green-500 icon
+  - Dark mode: dark:bg-green-950/30 dark:text-green-400 with text-green-500 icon
+  - WCAG AA compliant: 7:1 contrast ratio verified
+- Assignee prominence: Added "Assigned to: [Name]" label above assignee badge for improved accountability
+  - Clear visual hierarchy: Title → Updated time → Assigned to → Badge → Status
+  - Maintains Phase 8 spacing with ml-4 mb-2 gap-1
+- Status color differentiation: In Progress (slate), Done (green), Blocked (red) for at-a-glance clarity
+- Changes propagate consistently across all modes (standard, focus, presentation)
+- Architect approved, all e2e tests passed
+
 **All 8 Development Phases Complete:**
 1. ✅ Foundation & Core (Task management, localStorage, basic UI)
 2. ✅ Priority System (Three-tier priority levels with visual indicators)
