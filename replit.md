@@ -32,6 +32,20 @@ Post-release-lock semantic clarity amendments for enhanced readability:
 - Changes propagate consistently across all modes (standard, focus, presentation)
 - Architect approved, all e2e tests passed
 
+**Freeform Assignee Entry (Completed - October 28, 2025)**
+Upgraded assignee input system for real-world delegation tracking:
+- Replaced select dropdown with text input supporting custom names (e.g., "Sarah", "Jack Chen")
+- Datalist provides quick defaults (Executive, Assistant) while allowing any custom entry
+- Multi-word names fully supported for real person identification
+- Validation improvements:
+  - Whitespace trimming prevents malformed data ("  Sarah  " → "Sarah")
+  - Empty assignee fallback to "Unassigned" maintains accountability
+  - Title trimming for consistency
+- Backward compatible with existing "Executive"/"Assistant" tasks
+- Data persists correctly in localStorage with custom names
+- Test ID updated from `select-task-assignee` to `input-task-assignee`
+- Architect approved, all e2e tests passed
+
 **All 8 Development Phases Complete:**
 1. ✅ Foundation & Core (Task management, localStorage, basic UI)
 2. ✅ Priority System (Three-tier priority levels with visual indicators)
