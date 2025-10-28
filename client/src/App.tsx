@@ -11,6 +11,8 @@ type Task = {
   status: string;
   priority?: string;
   lastUpdated?: string;
+  contextSwitchCount?: number;
+  focusActiveDuringUpdate?: boolean;
 };
 
 const initialTasks: Task[] = [
@@ -21,6 +23,7 @@ const initialTasks: Task[] = [
     status: "In Progress",
     priority: "High",
     lastUpdated: new Date().toISOString(),
+    contextSwitchCount: 0,
   },
   {
     id: "2",
@@ -29,6 +32,7 @@ const initialTasks: Task[] = [
     status: "Done",
     priority: "Normal",
     lastUpdated: new Date().toISOString(),
+    contextSwitchCount: 0,
   },
   {
     id: "3",
@@ -37,6 +41,7 @@ const initialTasks: Task[] = [
     status: "Blocked",
     priority: "Normal",
     lastUpdated: new Date().toISOString(),
+    contextSwitchCount: 0,
   },
 ];
 
@@ -72,6 +77,27 @@ const priorityConfig = {
     label: "text-blue-600",
   },
 };
+
+function getRelativeTime(isoDate?: string): string {
+  if (!isoDate) return "Recently";
+  
+  const now = new Date();
+  const updated = new Date(isoDate);
+  const diffMs = now.getTime() - updated.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  
+  if (diffDays > 0) {
+    return diffDays === 1 ? "Updated 1 day ago" : `Updated ${diffDays} days ago`;
+  } else if (diffHours > 0) {
+    return diffHours === 1 ? "Updated 1 hour ago" : `Updated ${diffHours} hours ago`;
+  } else if (diffMinutes > 0) {
+    return diffMinutes === 1 ? "Updated 1 minute ago" : `Updated ${diffMinutes} minutes ago`;
+  } else {
+    return "Updated just now";
+  }
+}
 
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => {
@@ -123,7 +149,13 @@ export default function App() {
     setTasks((prev: Task[]) =>
       prev.map((task: Task) =>
         task.id === id
-          ? { ...task, status: newStatus, lastUpdated: new Date().toISOString() }
+          ? {
+              ...task,
+              status: newStatus,
+              lastUpdated: new Date().toISOString(),
+              contextSwitchCount: (task.contextSwitchCount || 0) + 1,
+              focusActiveDuringUpdate: focusMode,
+            }
           : task
       )
     );
@@ -140,6 +172,7 @@ export default function App() {
       status: newTask.status,
       priority: newTask.priority,
       lastUpdated: new Date().toISOString(),
+      contextSwitchCount: 0,
     };
 
     setTasks((prev) => [...prev, task]);
@@ -168,10 +201,10 @@ export default function App() {
       <div className="max-w-6xl mx-auto px-6 py-12">
         <header className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground mb-2">
+            <h1 className="text-2xl font-semibold text-foreground mb-1 tracking-tight">
               Delegate Lens
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground/80">
               Track delegated tasks between executive and assistant
             </p>
           </div>
@@ -179,12 +212,13 @@ export default function App() {
             <button
               data-testid="button-focus-mode"
               onClick={toggleFocusMode}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ease-out ${
                 focusMode
                   ? "bg-foreground text-background border-foreground"
                   : "bg-background text-foreground border-border hover:bg-muted"
               }`}
               aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
+              aria-pressed={focusMode}
             >
               <Focus className="w-4 h-4" />
               Focus
@@ -192,7 +226,7 @@ export default function App() {
             <button
               data-testid="button-new-task"
               onClick={() => setShowNewTaskForm(!showNewTaskForm)}
-              className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out"
               aria-label="Create new task"
             >
               <Plus className="w-4 h-4" />
@@ -200,6 +234,17 @@ export default function App() {
             </button>
           </div>
         </header>
+
+        {focusMode && (
+          <div
+            data-testid="banner-focus-mode"
+            className="mb-6 text-center py-2 px-4 bg-muted rounded-lg"
+          >
+            <span className="text-xs text-muted-foreground">
+              Focus Mode Active
+            </span>
+          </div>
+        )}
 
         {showNewTaskForm && (
           <div
@@ -298,7 +343,7 @@ export default function App() {
                 <button
                   data-testid="button-submit-task"
                   type="submit"
-                  className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-colors"
+                  className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out"
                   aria-label="Submit new task"
                 >
                   Create Task
@@ -315,7 +360,7 @@ export default function App() {
                       priority: "Normal",
                     });
                   }}
-                  className="px-4 py-2 bg-background text-foreground border border-border rounded-lg text-sm font-medium hover:bg-muted transition-colors"
+                  className="px-4 py-2 bg-background text-foreground border border-border rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
                   aria-label="Cancel new task"
                 >
                   Cancel
@@ -325,49 +370,48 @@ export default function App() {
           </div>
         )}
 
-        <div
-          className="mb-8 flex gap-3 flex-wrap transition-opacity duration-300"
-          style={{ opacity: focusMode ? 0.5 : 1 }}
-        >
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Total
-            </span>
-            <span className="text-sm font-semibold text-foreground">
-              {counts.total}
-            </span>
-          </div>
+        {!focusMode && (
+          <div className="mb-8 flex gap-3 flex-wrap">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Total
+              </span>
+              <span className="text-sm font-semibold text-foreground">
+                {counts.total}
+              </span>
+            </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
-            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              In Progress
-            </span>
-            <span className="text-sm font-semibold text-foreground">
-              {counts["In Progress"]}
-            </span>
-          </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
+              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                In Progress
+              </span>
+              <span className="text-sm font-semibold text-foreground">
+                {counts["In Progress"]}
+              </span>
+            </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
-            <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Done
-            </span>
-            <span className="text-sm font-semibold text-foreground">
-              {counts.Done}
-            </span>
-          </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
+              <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Done
+              </span>
+              <span className="text-sm font-semibold text-foreground">
+                {counts.Done}
+              </span>
+            </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
-            <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Blocked
-            </span>
-            <span className="text-sm font-semibold text-foreground">
-              {counts.Blocked}
-            </span>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
+              <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Blocked
+              </span>
+              <span className="text-sm font-semibold text-foreground">
+                {counts.Blocked}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="flex gap-2 mb-8 flex-wrap">
           {["All", "In Progress", "Done", "Blocked"].map((f) => (
@@ -375,12 +419,11 @@ export default function App() {
               key={f}
               data-testid={`button-filter-${f.toLowerCase().replace(" ", "-")}`}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-300 ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 ease-out ${
                 filter === f
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background text-foreground border-border hover:bg-muted"
               }`}
-              style={{ opacity: focusMode ? 0.5 : 1 }}
               aria-label={`Filter tasks by ${f}`}
             >
               {f}
@@ -388,7 +431,11 @@ export default function App() {
           ))}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+          aria-live="polite"
+          aria-atomic="false"
+        >
           {filteredTasks.map((task: Task) => {
             const statusConfig =
               statusColorMap[task.status as keyof typeof statusColorMap];
@@ -401,18 +448,28 @@ export default function App() {
               <div
                 key={task.id}
                 data-testid={`card-task-${task.id}`}
-                className="bg-card border border-muted p-5 rounded-xl shadow-sm hover:shadow-sm transition-shadow"
+                className="bg-card border border-muted p-5 rounded-xl hover:border-foreground/10 hover:shadow-none transition-all duration-200 ease-out"
               >
                 <div className="mb-4">
-                  <div className="flex items-start gap-2 mb-3">
+                  <div className="flex items-start gap-2 mb-2">
                     <div
                       className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${priorityStyle.dot}`}
                       aria-label={`Priority: ${priority}`}
                     ></div>
-                    <h2 className="text-base font-medium text-card-foreground flex-1">
+                    <h2
+                      className={`${
+                        focusMode ? "text-[1.1rem]" : "text-base"
+                      } font-medium text-card-foreground flex-1`}
+                    >
                       {task.title}
                     </h2>
                   </div>
+                  <p
+                    className="text-xs text-muted-foreground/70 ml-4 mb-3"
+                    data-testid={`text-updated-${task.id}`}
+                  >
+                    {getRelativeTime(task.lastUpdated)}
+                  </p>
                   <div className="flex gap-2 mb-3">
                     <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-muted">
                       {task.assignee}

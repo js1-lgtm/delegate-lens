@@ -1,0 +1,94 @@
+🧭 Objective
+
+Refine the current App.tsx to achieve the final Quiet Technology polish and prepare for Phase 5 (“Attention Architecture – Focus Frame”) integration.
+Focus on rhythm, cognitive ease, and internal data clarity.
+No new external libraries. Keep layout minimal and silent.
+
+🔧 Functional & UX Improvements
+
+Introduce Task Timeline Awareness
+
+Add a small “Updated X days ago” label under each task title, based on lastUpdated.
+
+Use subtle gray (text-muted-foreground/70, text-xs) typography.
+
+Auto-update when status changes.
+
+Context Switch Counter (Background Metric)
+
+Extend Task type with contextSwitchCount?: number.
+
+Increment this value whenever the task’s status changes.
+
+Do not display it yet — persist silently via localStorage for Phase 5.
+
+Focus Mode Refinement
+
+When active:
+
+Hide the summary bar completely (instead of fading).
+
+Slightly enlarge task title font (text-[1.1rem]).
+
+Add a top “Focus Mode Active” banner (text-xs, bg-muted, text-muted-foreground, rounded, centered).
+
+Persist state as already implemented.
+
+Header Hierarchy & Spatial Balance
+
+Add tracking-tight to main title.
+
+Slightly reduce margin-bottom (mb-1).
+
+Keep subtitle in text-sm text-muted-foreground/80.
+
+Micro-Interaction Consistency
+
+All buttons: transition-all duration-200 ease-out.
+
+All cards: hover:border-foreground/10 hover:shadow-none (to avoid pop).
+
+Filters: reduce padding to px-3 py-1.5 for compact harmony.
+
+Accessibility Enhancement
+
+Add aria-live="polite" to task list container so screen readers announce updates.
+
+Ensure every form label has a corresponding id.
+
+Verify Focus Mode toggle is navigable via keyboard and announces state.
+
+Schema Preparation for Phase 5
+
+Extend Task type to include: focusActiveDuringUpdate?: boolean;
+When status changes and focusMode === true, set focusActiveDuringUpdate = true.
+
+Persist silently for Phase 5 data merge.
+
+🎨 Design Principles to Preserve
+
+-No motion or sound.
+
+-Calm contrast, ample negative space.
+
+-Text feels like paper on matte surface.
+
+-“Luxury through simplicity” — clarity is the brand.
+
+📁 File to Edit
+
+client/src/App.tsx
+
+✅ Acceptance Criteria
+
+“Updated X days ago” displays accurately under each task title.
+
+Focus Mode hides non-essentials and shows banner.
+
+Context switch counter and focusActiveDuringUpdate fields added and persisted silently.
+
+Typography and whitespace feel calm and uniform.
+
+All ARIA and keyboard requirements pass basic accessibility review.
+
+Once complete, please display the entire updated App.tsx for review.
