@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CheckCircle2, Clock, AlertCircle, Plus, Focus, Activity } from "lucide-react";
 
 const STORAGE_KEY = "delegate-lens-tasks";
 const FOCUS_MODE_KEY = "delegate-lens-focus-mode";
 const TRACE_KEY = "delegate-lens-trace-data";
 const TRACE_VISIBLE_KEY = "delegate-lens-trace-visible";
+const INSIGHT_KEY = "delegate-lens-insight-data";
+const INSIGHT_VISIBLE_KEY = "delegate-lens-insight-visible";
+const HISTORY_VISIBLE_KEY = "delegate-lens-history-visible";
 
 type Task = {
   id: string;
@@ -21,6 +24,13 @@ type Task = {
 type TraceData = {
   tasksUpdatedToday: number;
   lastTraceDate: string;
+};
+
+type InsightData = {
+  topSwitchTasks: string[];
+  mostRecentTask: string;
+  contextSwitchTotal: number;
+  generatedAt: string;
 };
 
 const initialTasks: Task[] = [
@@ -115,6 +125,13 @@ function getTodayDateString(): string {
   return today.toISOString().split('T')[0];
 }
 
+function formatHistoryDate(isoDate: string): string {
+  const date = new Date(isoDate);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${month}/${day}`;
+}
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
@@ -160,6 +177,33 @@ export default function App() {
     }
   });
 
+  const [insightVisible, setInsightVisible] = useState(() => {
+    try {
+      const stored = localStorage.getItem(INSIGHT_VISIBLE_KEY);
+      return stored === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const [insightData, setInsightData] = useState<InsightData | null>(() => {
+    try {
+      const stored = localStorage.getItem(INSIGHT_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [historyVisible, setHistoryVisible] = useState<Record<string, boolean>>(() => {
+    try {
+      const stored = localStorage.getItem(HISTORY_VISIBLE_KEY);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
+
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
@@ -167,6 +211,8 @@ export default function App() {
     status: "In Progress",
     priority: "Normal",
   });
+
+  const insightOverlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -201,15 +247,80 @@ export default function App() {
   }, [traceVisible]);
 
   useEffect(() => {
+    try {
+      localStorage.setItem(INSIGHT_VISIBLE_KEY, insightVisible.toString());
+    } catch (error) {
+      console.error("Failed to save insight visibility:", error);
+    }
+  }, [insightVisible]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(HISTORY_VISIBLE_KEY, JSON.stringify(historyVisible));
+    } catch (error) {
+      console.error("Failed to save history visibility:", error);
+    }
+  }, [historyVisible]);
+
+  useEffect(() => {
+    if (insightData) {
+      try {
+        localStorage.setItem(INSIGHT_KEY, JSON.stringify(insightData));
+      } catch (error) {
+        console.error("Failed to save insight data:", error);
+      }
+    }
+  }, [insightData]);
+
+  useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && traceVisible) {
-        setTraceVisible(false);
+      if (e.key === "Escape") {
+        if (insightVisible) {
+          setInsightVisible(false);
+        } else if (traceVisible) {
+          setTraceVisible(false);
+        }
       }
     };
     
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [traceVisible]);
+  }, [traceVisible, insightVisible]);
+
+  // Focus trap for insight overlay
+  useEffect(() => {
+    if (insightVisible && insightOverlayRef.current) {
+      const overlay = insightOverlayRef.current;
+      const focusableElements = overlay.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      const handleTab = (e: KeyboardEvent) => {
+        if (e.key === "Tab") {
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement?.focus();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement?.focus();
+            }
+          }
+        }
+      };
+
+      overlay.addEventListener("keydown", handleTab as any);
+      firstElement?.focus();
+
+      return () => {
+        overlay.removeEventListener("keydown", handleTab as any);
+      };
+    }
+  }, [insightVisible]);
 
   const filteredTasks =
     filter === "All" ? tasks : tasks.filter((t: Task) => t.status === filter);
@@ -281,6 +392,37 @@ export default function App() {
     setTraceVisible((prev) => !prev);
   };
 
+  const toggleInsight = () => {
+    if (!insightVisible) {
+      // Generate insight data when opening
+      const sortedBySwitch = [...tasks].sort(
+        (a, b) => (b.contextSwitchCount || 0) - (a.contextSwitchCount || 0)
+      );
+      const topThree = sortedBySwitch.slice(0, 3).map((t) => t.title);
+      
+      const mostRecent = [...tasks].sort(
+        (a, b) => new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime()
+      )[0];
+
+      const totalSwitches = tasks.reduce((sum, t) => sum + (t.contextSwitchCount || 0), 0);
+
+      setInsightData({
+        topSwitchTasks: topThree,
+        mostRecentTask: mostRecent?.title || "None",
+        contextSwitchTotal: totalSwitches,
+        generatedAt: new Date().toISOString(),
+      });
+    }
+    setInsightVisible((prev) => !prev);
+  };
+
+  const toggleHistory = (taskId: string) => {
+    setHistoryVisible((prev) => ({
+      ...prev,
+      [taskId]: !prev[taskId],
+    }));
+  };
+
   const counts = {
     total: tasks.length,
     "In Progress": tasks.filter((t: Task) => t.status === "In Progress").length,
@@ -308,6 +450,17 @@ export default function App() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              data-testid="button-insight"
+              onClick={toggleInsight}
+              className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+              aria-label={insightVisible ? "Close insight overlay" : "Open insight overlay"}
+              aria-controls="insight-overlay"
+              aria-expanded={insightVisible}
+            >
+              <Activity className="w-4 h-4" />
+              Insight
+            </button>
             <button
               data-testid="button-focus-mode"
               onClick={toggleFocusMode}
@@ -548,7 +701,7 @@ export default function App() {
               <div
                 key={task.id}
                 data-testid={`card-task-${task.id}`}
-                className="bg-card border border-muted p-5 rounded-lg hover:border-foreground/10 hover:shadow-none transition-all duration-200 ease-out"
+                className="bg-card border border-muted p-4 rounded-lg hover:border-foreground/10 hover:shadow-none transition-all duration-200 ease-out"
               >
                 <div className="mb-4">
                   <div className="flex items-start gap-2 mb-2">
@@ -559,7 +712,7 @@ export default function App() {
                     <h2
                       className={`${
                         focusMode ? "text-[1.1rem]" : "text-base"
-                      } font-semibold text-card-foreground flex-1`}
+                      } font-semibold text-card-foreground flex-1 leading-tight`}
                     >
                       {task.title}
                     </h2>
@@ -599,14 +752,107 @@ export default function App() {
                     <option value="Blocked">Blocked</option>
                   </select>
                 </div>
+
+                {/* View History Link */}
+                {task.history && task.history.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-border/30">
+                    <button
+                      data-testid={`button-view-history-${task.id}`}
+                      onClick={() => toggleHistory(task.id)}
+                      className="text-[11px] text-muted-foreground/70 hover:text-muted-foreground transition-all duration-200 ease-out"
+                      aria-label={`${historyVisible[task.id] ? 'Hide' : 'View'} history for ${task.title}`}
+                    >
+                      {historyVisible[task.id] ? 'Hide History' : 'View History'}
+                    </button>
+
+                    {historyVisible[task.id] && (
+                      <div
+                        data-testid={`history-${task.id}`}
+                        className="mt-2 space-y-1 transition-all duration-200 ease-out"
+                      >
+                        {task.history.slice(-3).reverse().map((entry, idx) => (
+                          <div
+                            key={idx}
+                            className="text-[11px] text-muted-foreground/70 ml-2"
+                          >
+                            • {formatHistoryDate(entry.date)} – {entry.oldStatus} → {entry.newStatus}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       </div>
 
+      {/* Insight Overlay */}
+      {insightVisible && (
+        <div
+          id="insight-overlay"
+          ref={insightOverlayRef}
+          data-testid="overlay-insight"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-6"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setInsightVisible(false);
+            }
+          }}
+        >
+          <div className="bg-card border border-muted rounded-lg shadow-lg p-6 max-w-md w-full">
+            <h2 className="sr-only">Focus Frame Insights</h2>
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-foreground mb-4">
+                Focus Frame Insights
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
+                    Top 3 Tasks by Context Switch
+                  </p>
+                  <div className="space-y-1">
+                    {insightData?.topSwitchTasks?.map((title, idx) => (
+                      <p key={idx} className="text-sm text-foreground ml-2">
+                        {idx + 1}. {title}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
+                    Most Recently Updated
+                  </p>
+                  <p className="text-sm text-foreground ml-2">
+                    {insightData?.mostRecentTask}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-border/30">
+                  <p className="text-sm text-muted-foreground/80 italic">
+                    You've switched context {insightData?.contextSwitchTotal || 0} times across {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} today.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              data-testid="button-close-insight"
+              onClick={() => setInsightVisible(false)}
+              className="w-full px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out"
+              aria-label="Close insight overlay"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Cognitive Trace Panel */}
-      <div className="fixed bottom-0 left-0 right-0">
+      <div className={`fixed bottom-0 left-0 right-0 transition-opacity duration-200 ease-out ${insightVisible ? 'opacity-40' : 'opacity-100'}`}>
         <button
           data-testid="button-toggle-trace"
           onClick={toggleTrace}
@@ -628,8 +874,8 @@ export default function App() {
             className="bg-muted/30 border-t border-border/40 rounded-t-lg"
           >
             <div className="max-w-6xl mx-auto px-4 py-3">
-              <h2 className="sr-only">Cognitive Trace</h2>
-              <div className="flex flex-wrap gap-6 text-xs text-muted-foreground">
+              <h2 className="sr-only">Cognitive Trace Metrics</h2>
+              <div className="flex flex-wrap gap-6 text-xs text-muted-foreground font-normal tracking-tight">
                 <div className="flex items-center gap-2">
                   <span className="uppercase tracking-wide">Avg Context Switch</span>
                   <span className="font-semibold text-foreground" data-testid="metric-avg-context-switch">

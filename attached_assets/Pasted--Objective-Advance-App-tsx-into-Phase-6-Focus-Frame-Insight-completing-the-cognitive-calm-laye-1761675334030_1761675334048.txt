@@ -1,0 +1,103 @@
+🧭 Objective
+
+Advance App.tsx into Phase 6 — Focus Frame Insight, completing the cognitive calm layer and preparing for executive presentation mode.
+Maintain all existing quiet-luxury design choices; this phase adds reflective depth and structural readiness for integration.
+
+🔧 Functional & UX Improvements
+
+Introduce “Focus Frame Insight” Overlay
+
+Add a subtle top-right toggle button labeled “Insight” (use Activity icon).
+
+When toggled, display a lightweight modal overlay summarizing:
+
+Top 3 tasks by contextSwitchCount (descending).
+
+The most recently updated task title + time.
+
+A gentle textual reflection:
+
+“You’ve switched context X times across Y tasks today.”
+
+Overlay style: fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center text-sm text-muted-foreground p-6 z-50 rounded-lg shadow-lg.
+
+Close with Esc key or outside click.
+
+Persist “insight visible” state in localStorage("delegate-lens-insight-visible").
+
+Integrate with Cognitive Trace Panel
+
+When Insight Overlay opens, fade the Trace Panel to 40 % opacity.
+
+When closed, restore normal state.
+
+Add ARIA connections (aria-controls, aria-expanded).
+
+Task History Visualization (Preparatory)
+
+Extend each Task card to show a small “View History” link (bottom-right).
+
+Clicking toggles a collapsible div (transition-all duration-200 ease-out) showing up to the three most recent history entries:
+
+Each entry: • MM/DD – oldStatus → newStatus
+Typography: text-[11px] text-muted-foreground/70 mt-1 ml-2.
+
+Default: collapsed. Persist open/closed state per task in localStorage.
+
+Micro-Typographic Refinement
+
+Task title line-height → leading-tight.
+
+Reduce card padding from p-5 to p-4.
+
+Cognitive Trace font → font-normal tracking-tight for gentler flow.
+
+Accessibility and Focus Cycle
+
+Add hidden <h2> above Trace Panel and Insight Overlay for assistive tech:
+
+“Cognitive Trace Metrics” and “Focus Frame Insights”.
+
+Trap keyboard focus inside Insight Overlay when active.
+
+Escape key closes both Insight and Trace if open.
+
+Internal Data Enrichment for Metrics Export
+
+Create const INSIGHT_KEY = "delegate-lens-insight-data".
+
+Store object: {
+  topSwitchTasks: string[];
+  mostRecentTask: string;
+  contextSwitchTotal: number;
+  generatedAt: string;
+}
+Update whenever Insight Overlay opens (but not on every status change).
+
+No export yet — Phase 7 will surface as data view.
+
+🎨 Design Principles to Preserve
+
+No animations > 200 ms.
+
+Maintain neutral palette; no new colors.
+
+Interface must remain “still and assured.”
+
+Typography > color for hierarchy.
+
+📁 File to Edit
+
+client/src/App.tsx
+
+✅ Acceptance Criteria
+
+Insight Overlay appears, closes gracefully, and persists visibility state.
+
+Trace Panel fades appropriately when Insight is active.
+
+“View History” per task functions and persists state.
+
+All data is captured and stored quietly in localStorage.
+
+Visual rhythm and calm remain unchanged.
