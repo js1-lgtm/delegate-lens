@@ -1,0 +1,71 @@
+🧭 Objective
+
+Perform final code review, polish, and optimization pass on Delegate Lens v1.0 (Release Candidate R1).
+This version is functionally and visually complete — this pass ensures total release stability, visual polish, and accessibility perfection before tagging v1.0.0.
+
+🧩 Final Review & Refinement Directives
+1. 🧹 Code Consistency & Cleanup
+
+Run Prettier across the file to normalize indentation, quotes, and spacing.
+
+Confirm there are no unused imports or unreferenced hooks (useRef, useCallback, etc.).
+
+Verify all TypeScript checks pass under strict mode — no implicit any types or nullable misuses.
+
+Confirm no console.log or console.error outputs remain in production paths.
+
+2. ⚡ Performance & Behavior
+
+Validate that all debounced saves (100 ms) function correctly — no redundant re-renders on state changes.
+
+Check that the Focus Mode, Trace Panel, Insight Overlay, and Presentation Mode toggle transitions are smooth (≤ 200 ms).
+
+Confirm that the daily reset logic for traceData and the 7-day expiry for insightData both trigger correctly by simulating date rollovers.
+
+3. 🎨 Visual Alignment & Polish
+
+Verify that all cards (.bg-card) render with consistent shadow depth (shadow-sm → hover:shadow-md) and spacing uniformity.
+
+Ensure text contrast meets WCAG AA — particularly muted foregrounds and red/green indicators.
+
+Check that Low Priority (green) and High Priority (red) color contrast ratios exceed 4.5:1.
+
+In Presentation Mode, verify typography scaling: headers (≈ 1.05 rem), metrics (14 px), footer (10 px).
+
+Confirm that all fade-in transitions (@keyframes fadeIn) render smoothly without layout jank.
+
+4. ♿ Accessibility & Keyboard Navigation
+
+Confirm all ARIA attributes are valid:
+
+role="region" on task grid
+
+aria-live="polite" for updates
+
+aria-modal="true" on overlays
+
+Verify that focus trapping inside the Insight Overlay works reliably with both Tab and Shift+Tab.
+
+When overlays are open, ensure background UI is inert (non-tabbable).
+
+Ensure that pressing Esc sequentially closes overlays → exits presentation mode → returns to default view (no stuck state).
+
+5. 🧪 Functional Validation Checklist
+
+✅ Task creation (with custom assignee names)
+
+✅ Status updates and trace increments
+
+✅ History toggling and rendering (last 3 entries)
+
+✅ Focus Mode toggle persistence
+
+✅ Insight Overlay generation and auto-refresh logic
+
+✅ Presentation Mode merged dashboard behavior
+
+✅ LocalStorage restore and data retention across reloads
+
+6. 🧾 Build & Version Tagging
+
+Append footer string to include full version and release marker:

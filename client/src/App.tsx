@@ -272,8 +272,8 @@ export default function App() {
     debounce((tasks: Task[]) => {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      } catch (error) {
-        console.error("Failed to save tasks:", error);
+      } catch {
+        // Silent fail for localStorage errors
       }
     }, 100),
     []
@@ -283,8 +283,8 @@ export default function App() {
     debounce((data: TraceData) => {
       try {
         localStorage.setItem(TRACE_KEY, JSON.stringify(data));
-      } catch (error) {
-        console.error("Failed to save trace data:", error);
+      } catch {
+        // Silent fail for localStorage errors
       }
     }, 100),
     []
@@ -294,8 +294,8 @@ export default function App() {
     debounce((visible: Record<string, boolean>) => {
       try {
         localStorage.setItem(HISTORY_VISIBLE_KEY, JSON.stringify(visible));
-      } catch (error) {
-        console.error("Failed to save history visibility:", error);
+      } catch {
+        // Silent fail for localStorage errors
       }
     }, 100),
     []
@@ -305,8 +305,8 @@ export default function App() {
     debounce((filter: string) => {
       try {
         localStorage.setItem(FILTER_KEY, filter);
-      } catch (error) {
-        console.error("Failed to save filter:", error);
+      } catch {
+        // Silent fail for localStorage errors
       }
     }, 100),
     []
@@ -316,8 +316,8 @@ export default function App() {
     debounce((mode: boolean) => {
       try {
         localStorage.setItem(FOCUS_MODE_KEY, mode.toString());
-      } catch (error) {
-        console.error("Failed to save focus mode:", error);
+      } catch {
+        // Silent fail for localStorage errors
       }
     }, 100),
     []
@@ -327,8 +327,8 @@ export default function App() {
     debounce((visible: boolean) => {
       try {
         localStorage.setItem(TRACE_VISIBLE_KEY, visible.toString());
-      } catch (error) {
-        console.error("Failed to save trace visibility:", error);
+      } catch {
+        // Silent fail for localStorage errors
       }
     }, 100),
     []
@@ -338,8 +338,8 @@ export default function App() {
     debounce((visible: boolean) => {
       try {
         localStorage.setItem(INSIGHT_VISIBLE_KEY, visible.toString());
-      } catch (error) {
-        console.error("Failed to save insight visibility:", error);
+      } catch {
+        // Silent fail for localStorage errors
       }
     }, 100),
     []
@@ -349,8 +349,8 @@ export default function App() {
     debounce((mode: boolean) => {
       try {
         localStorage.setItem(PRESENTATION_MODE_KEY, mode.toString());
-      } catch (error) {
-        console.error("Failed to save presentation mode:", error);
+      } catch {
+        // Silent fail for localStorage errors
       }
     }, 100),
     []
@@ -360,8 +360,8 @@ export default function App() {
     debounce((data: InsightData) => {
       try {
         localStorage.setItem(INSIGHT_KEY, JSON.stringify(data));
-      } catch (error) {
-        console.error("Failed to save insight data:", error);
+      } catch {
+        // Silent fail for localStorage errors
       }
     }, 100),
     []
