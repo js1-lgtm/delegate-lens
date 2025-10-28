@@ -154,7 +154,9 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : initialTasks;
+      const parsed = stored ? JSON.parse(stored) : initialTasks;
+      // Filter malformed tasks on mount
+      return parsed.filter((t: Task) => t.id && t.title);
     } catch {
       return initialTasks;
     }
@@ -619,7 +621,7 @@ export default function App() {
               <button
                 data-testid="button-present"
                 onClick={togglePresentationMode}
-                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/20 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
                 aria-label="Enter presentation mode"
                 aria-pressed={presentationMode}
               >
@@ -629,7 +631,7 @@ export default function App() {
               <button
                 data-testid="button-insight"
                 onClick={toggleInsight}
-                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/20 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
                 aria-label={insightVisible ? "Close insight overlay" : "Open insight overlay"}
                 aria-controls="insight-overlay"
                 aria-expanded={insightVisible}
@@ -640,7 +642,7 @@ export default function App() {
               <button
                 data-testid="button-focus-mode"
                 onClick={toggleFocusMode}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border/20 transition-all duration-200 ease-out ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border/30 transition-all duration-200 ease-out ${
                   focusMode
                     ? "bg-foreground text-background border-foreground"
                     : "bg-background text-foreground hover:bg-muted"
@@ -666,7 +668,7 @@ export default function App() {
             <button
               data-testid="button-exit-presentation"
               onClick={togglePresentationMode}
-              className="px-4 py-2 bg-background text-foreground border border-border/20 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+              className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium opacity-90 transition-all duration-200 ease-out"
               aria-label="Exit presentation mode"
               aria-pressed={presentationMode}
             >
@@ -689,9 +691,9 @@ export default function App() {
         {showNewTaskForm && !presentationMode && (
           <div
             data-testid="form-new-task"
-            className="mb-6 p-6 bg-muted/30 border border-border/20 rounded-lg"
+            className="mb-6 p-6 bg-muted/30 border border-border/30 rounded-lg"
           >
-            <h3 className="text-sm font-medium text-foreground mb-4">
+            <h3 className="text-sm font-medium text-foreground mb-3">
               Create New Task
             </h3>
             <form onSubmit={handleCreateTask} className="space-y-4">
@@ -712,6 +714,7 @@ export default function App() {
                   }
                   className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
                   placeholder="Enter task title..."
+                  aria-required="true"
                   autoFocus
                 />
               </div>
@@ -800,7 +803,7 @@ export default function App() {
                       priority: "Normal",
                     });
                   }}
-                  className="px-4 py-2 bg-background text-foreground border border-border/20 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+                  className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
                   aria-label="Cancel new task"
                 >
                   Cancel
@@ -854,13 +857,13 @@ export default function App() {
         )}
 
         {!presentationMode && (
-          <div className="flex gap-2 mb-6 flex-wrap">
+          <div className="flex gap-2 mb-8 flex-wrap">
             {["All", "In Progress", "Done", "Blocked"].map((f) => (
               <button
                 key={f}
                 data-testid={`button-filter-${f.toLowerCase().replace(" ", "-")}`}
                 onClick={() => setFilter(f)}
-                className={`relative px-3 py-1.5 rounded-lg text-sm font-medium border border-border/20 transition-all duration-200 ease-out overflow-visible ${
+                className={`relative px-3 py-1.5 rounded-lg text-sm font-medium border border-border/30 transition-all duration-200 ease-out overflow-visible ${
                   filter === f
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-background text-foreground hover:bg-muted"
@@ -897,10 +900,10 @@ export default function App() {
               <div
                 key={task.id}
                 data-testid={`card-task-${task.id}`}
-                className={`bg-card border border-border/20 p-4 rounded-xl hover:border-foreground/10 hover:shadow-none transition-all duration-200 ease-out ${
+                className={`bg-card border border-border/30 p-5 rounded-xl hover:border-foreground/10 hover:shadow-sm transition-shadow transition-all duration-200 ease-out ${
                   presentationMode ? 'opacity-0 animate-fade-in' : ''
                 }`}
-                style={presentationMode ? { animation: 'fadeIn 300ms ease-out forwards' } : undefined}
+                style={presentationMode ? { animation: 'fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards' } : undefined}
               >
                 <div className="mb-4">
                   <div className="flex items-start gap-2 mb-2">
@@ -910,8 +913,8 @@ export default function App() {
                     ></div>
                     <h2
                       className={`${
-                        presentationMode ? "text-[1.05rem]" : focusMode ? "text-[1.1rem]" : "text-base"
-                      } font-semibold text-card-foreground flex-1 leading-tight`}
+                        presentationMode ? "text-[1.05rem] font-medium" : focusMode ? "text-[1.1rem] font-semibold" : "text-base font-semibold"
+                      } text-card-foreground flex-1 leading-tight`}
                     >
                       {task.title}
                     </h2>
@@ -923,7 +926,7 @@ export default function App() {
                     {getRelativeTime(task.lastUpdated)}
                   </p>
                   <div className="flex gap-2">
-                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/20">
+                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/30">
                       {task.assignee}
                     </span>
                   </div>
@@ -1004,16 +1007,16 @@ export default function App() {
             }
           }}
         >
-          <div className="bg-card border border-border/20 rounded-lg shadow-lg p-6 max-w-md w-full">
+          <div className="bg-card border border-border/30 rounded-lg shadow-lg p-6 max-w-md w-full" aria-describedby="insight-content">
             <h2 className="sr-only">Focus Frame Insights</h2>
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-foreground mb-4">
+            <div className="mb-6" id="insight-content">
+              <h3 className="text-sm font-semibold text-foreground mb-3" id="insight-title">
                 Focus Frame Insights
               </h3>
 
               <div className="space-y-4 text-left">
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
+                  <p className="text-[13px] font-medium uppercase tracking-wide text-muted-foreground/80 mb-2">
                     Top 3 Tasks by Context Switch
                   </p>
                   <div className="space-y-1">
@@ -1026,7 +1029,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
+                  <p className="text-[13px] font-medium uppercase tracking-wide text-muted-foreground/80 mb-2">
                     Most Recently Updated
                   </p>
                   <p className="text-sm text-foreground ml-2">
@@ -1035,7 +1038,7 @@ export default function App() {
                 </div>
 
                 <div className="pt-3 border-t border-border/30">
-                  <p className="text-sm text-muted-foreground/80 italic">
+                  <p className="text-sm text-muted-foreground/80 italic leading-relaxed">
                     You've switched context {insightData?.contextSwitchTotal || 0} times across {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} today.
                   </p>
                 </div>
@@ -1057,9 +1060,9 @@ export default function App() {
       {/* Presentation Mode: Merged Trace + Insight Panel */}
       {presentationMode && (
         <div className="fixed bottom-0 left-0 right-0 bg-muted/30 border-t border-border/40 rounded-t-lg">
-          <div className="max-w-6xl mx-auto px-4 py-3" role="status">
+          <div className="max-w-6xl mx-auto px-4 py-3" role="status" aria-live="polite">
             <h2 className="sr-only">Cognitive Trace Metrics</h2>
-            <div className="grid grid-cols-2 gap-8 text-xs text-muted-foreground font-normal tracking-tight leading-snug">
+            <div className="grid grid-cols-2 gap-8 text-[12px] text-muted-foreground font-normal tracking-tight leading-snug">
               {/* Left Column: Trace Metrics */}
               <div className="space-y-2 text-left">
                 <p className="uppercase tracking-wide mb-3 font-medium">Trace Metrics</p>
@@ -1078,7 +1081,7 @@ export default function App() {
                 <div className="flex items-center gap-2">
                   <span className="uppercase tracking-wide">Updated Today</span>
                   <span className="font-semibold text-foreground" data-testid="metric-updated-today">
-                    {traceData.tasksUpdatedToday}
+                    {traceData.tasksUpdatedToday > 999 ? '999+' : traceData.tasksUpdatedToday}
                   </span>
                 </div>
               </div>
@@ -1107,6 +1110,10 @@ export default function App() {
               </div>
             </div>
           </div>
+          {/* Brand Signature Footer */}
+          <div className="text-[10px] text-muted-foreground/50 text-center py-1 tracking-widest uppercase">
+            Delegate Lens · v1.0 · Cognitive Clarity Suite
+          </div>
         </div>
       )}
 
@@ -1131,7 +1138,7 @@ export default function App() {
             <div
               id="cognitive-trace-panel"
               data-testid="panel-cognitive-trace"
-              className="bg-muted/30 border-t border-border/40 rounded-t-lg"
+              className="bg-muted/30 border-t border-border/40 rounded-t-lg transition-opacity duration-250 ease-[cubic-bezier(0.25,0.1,0.25,1)] opacity-100"
               role="status"
             >
               <div className="max-w-6xl mx-auto px-4 py-3">
@@ -1152,7 +1159,7 @@ export default function App() {
                   <div className="flex items-center gap-2">
                     <span className="uppercase tracking-wide">Updated Today</span>
                     <span className="font-semibold text-foreground" data-testid="metric-updated-today">
-                      {traceData.tasksUpdatedToday}
+                      {traceData.tasksUpdatedToday > 999 ? '999+' : traceData.tasksUpdatedToday}
                     </span>
                   </div>
                 </div>

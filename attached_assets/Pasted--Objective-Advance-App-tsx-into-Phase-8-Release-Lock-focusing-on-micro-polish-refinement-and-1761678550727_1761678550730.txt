@@ -1,0 +1,97 @@
+🧭 Objective
+
+Advance App.tsx into Phase 8 – Release Lock, focusing on micro-polish, refinement, and executive readiness.
+No new features are to be introduced — this pass ensures performance integrity, typographic equilibrium, and graceful visual stillness across all modes (Focus / Insight / Presentation).
+
+🧩 Implementation Amendments
+
+Visual Rhythm Refinement
+
+Reduce card shadow pop by 50%: replace all hover:shadow-none with hover:shadow-sm transition-shadow duration-200 ease-out.
+
+Slightly increase card breathing room: change p-4 → p-5.
+
+Add consistent vertical rhythm:
+
+Filter bar bottom margin → mb-8.
+
+Section titles → mb-3.
+
+Harmonize border treatment: change all border-border/20 to border-border/30 for gentler tone.
+
+Typography and Hierarchy
+
+Task titles → font-medium (instead of font-semibold) when in Presentation Mode for quieter authority.
+
+Insight overlay headers → text-[13px] font-medium uppercase tracking-wide text-muted-foreground/80.
+
+Cognitive Trace and Presentation Metrics → text-[12px] font-normal tracking-tight leading-snug.
+
+Add consistent leading-relaxed to all paragraph-like text (<p> inside Insight or Trace).
+
+Motion Equilibrium
+
+Synchronize fade-in timing with Insight Overlay:
+
+Change animation duration from 300ms → 250ms.
+
+Add cubic-bezier easing: ease-[cubic-bezier(0.25, 0.1, 0.25, 1)].
+
+Trace Panel toggle should fade rather than snap:
+
+Wrap trace panel in transition opacity: <div className={\`transition-opacity duration-250 ease-[cubic-bezier(0.25,0.1,0.25,1)] \${traceVisible ? 'opacity-100' : 'opacity-0'}\`}>
+Consistency Between Modes
+
+Focus Mode and Presentation Mode must share identical background tone (bg-background only, no bg-muted/30 overlays).
+
+When Presentation Mode is active, hide all button hover states (add pointer-events-none and opacity-90).
+
+Ensure exiting Presentation Mode re-enables all interactivity gracefully.
+
+Accessibility & Semantics
+
+Add aria-labelledby linking between headers and panels (e.g., Insight, Trace).
+
+Ensure role="dialog" includes aria-describedby pointing to Insight content container.
+
+Add aria-live="polite" on Presentation Panel summary grid for real-time updates.
+
+Label new task form fields with explicit aria-required="true".
+
+Data Stability & Cleanup
+
+On mount, perform cleanup pass removing any malformed or empty task objects (missing id or title). setTasks((prev) => prev.filter(t => t.id && t.title));
+If traceData.tasksUpdatedToday exceeds 999, cap it to 999+ for UI stability.
+
+Subtle Brand Signature (Final Touch)
+
+Add a non-intrusive footer line (below Trace Panel): <div className="text-[10px] text-muted-foreground/50 text-center py-1 tracking-widest uppercase">
+  Delegate Lens · v1.0 · Cognitive Clarity Suite
+</div>
+Include only in Presentation Mode; ensure it does not overlap Trace Panel.
+
+🎨 Design Principles to Preserve
+
+Maintain quiet-luxury minimalism; no color intensity changes.
+
+Motion must support perception, not decoration.
+
+Every pixel and frame serves comprehension and calm.
+
+Preserve zero noise, zero distraction flow.
+
+📁 File to Edit
+
+client/src/App.tsx
+
+✅ Acceptance Criteria
+
+Typography and motion feel cohesive, balanced, and understated.
+
+Presentation Mode transitions are smooth and reversible.
+
+Accessibility labels and ARIA roles pass testing with no console warnings.
+
+Task list and metrics remain visually still and stable under rapid updates.
+
+The interface radiates “executive calm” — fully production-ready aesthetic.
