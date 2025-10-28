@@ -263,6 +263,7 @@ export default function App() {
     status: "In Progress",
     priority: "Normal",
   });
+  const [titleError, setTitleError] = useState("");
 
   const insightOverlayRef = useRef<HTMLDivElement>(null);
 
@@ -495,7 +496,10 @@ export default function App() {
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTask.title.trim()) return;
+    if (!newTask.title.trim()) {
+      setTitleError("Task title is required");
+      return;
+    }
 
     const task: Task = {
       id: Date.now().toString(),
@@ -515,6 +519,7 @@ export default function App() {
       status: "In Progress",
       priority: "Normal",
     });
+    setTitleError("");
     setShowNewTaskForm(false);
   };
 
@@ -709,14 +714,27 @@ export default function App() {
                   data-testid="input-task-title"
                   type="text"
                   value={newTask.title}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, title: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setNewTask({ ...newTask, title: e.target.value });
+                    if (titleError) setTitleError("");
+                  }}
                   className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
                   placeholder="Enter task title..."
                   aria-required="true"
+                  aria-invalid={titleError ? "true" : "false"}
+                  aria-describedby={titleError ? "title-error" : undefined}
                   autoFocus
                 />
+                {titleError && (
+                  <p 
+                    id="title-error" 
+                    role="alert" 
+                    className="text-xs text-red-600 dark:text-red-400 mt-1"
+                    data-testid="error-title"
+                  >
+                    {titleError}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
