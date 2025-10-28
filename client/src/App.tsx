@@ -1161,7 +1161,7 @@ export default function App() {
             <div
               id="cognitive-trace-panel"
               data-testid="panel-cognitive-trace"
-              className="bg-muted/30 border-t border-border/40 rounded-t-lg transition-opacity duration-250 ease-[cubic-bezier(0.25,0.1,0.25,1)] opacity-100"
+              className="bg-muted/30 border-t border-border/40 rounded-t-lg transition-opacity duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] opacity-100"
               role="status"
             >
               <div className="max-w-6xl mx-auto px-4 py-3">
