@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { CheckCircle2, Clock, AlertCircle, Plus, Focus } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, Plus, Focus, Activity } from "lucide-react";
 
 const STORAGE_KEY = "delegate-lens-tasks";
 const FOCUS_MODE_KEY = "delegate-lens-focus-mode";
+const TRACE_KEY = "delegate-lens-trace-data";
+const TRACE_VISIBLE_KEY = "delegate-lens-trace-visible";
 
 type Task = {
   id: string;
@@ -13,6 +15,12 @@ type Task = {
   lastUpdated?: string;
   contextSwitchCount?: number;
   focusActiveDuringUpdate?: boolean;
+  history?: { date: string; oldStatus: string; newStatus: string }[];
+};
+
+type TraceData = {
+  tasksUpdatedToday: number;
+  lastTraceDate: string;
 };
 
 const initialTasks: Task[] = [
@@ -24,6 +32,7 @@ const initialTasks: Task[] = [
     priority: "High",
     lastUpdated: new Date().toISOString(),
     contextSwitchCount: 0,
+    history: [],
   },
   {
     id: "2",
@@ -33,6 +42,7 @@ const initialTasks: Task[] = [
     priority: "Normal",
     lastUpdated: new Date().toISOString(),
     contextSwitchCount: 0,
+    history: [],
   },
   {
     id: "3",
@@ -42,6 +52,7 @@ const initialTasks: Task[] = [
     priority: "Normal",
     lastUpdated: new Date().toISOString(),
     contextSwitchCount: 0,
+    history: [],
   },
 ];
 
@@ -99,6 +110,11 @@ function getRelativeTime(isoDate?: string): string {
   }
 }
 
+function getTodayDateString(): string {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+}
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
@@ -118,6 +134,32 @@ export default function App() {
       return false;
     }
   });
+
+  const [traceData, setTraceData] = useState<TraceData>(() => {
+    try {
+      const stored = localStorage.getItem(TRACE_KEY);
+      const data = stored ? JSON.parse(stored) : { tasksUpdatedToday: 0, lastTraceDate: getTodayDateString() };
+      
+      // Daily reset logic
+      const today = getTodayDateString();
+      if (data.lastTraceDate !== today) {
+        return { tasksUpdatedToday: 0, lastTraceDate: today };
+      }
+      return data;
+    } catch {
+      return { tasksUpdatedToday: 0, lastTraceDate: getTodayDateString() };
+    }
+  });
+
+  const [traceVisible, setTraceVisible] = useState(() => {
+    try {
+      const stored = localStorage.getItem(TRACE_VISIBLE_KEY);
+      return stored === "true";
+    } catch {
+      return false;
+    }
+  });
+
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
@@ -142,23 +184,68 @@ export default function App() {
     }
   }, [focusMode]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(TRACE_KEY, JSON.stringify(traceData));
+    } catch (error) {
+      console.error("Failed to save trace data:", error);
+    }
+  }, [traceData]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(TRACE_VISIBLE_KEY, traceVisible.toString());
+    } catch (error) {
+      console.error("Failed to save trace visibility:", error);
+    }
+  }, [traceVisible]);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && traceVisible) {
+        setTraceVisible(false);
+      }
+    };
+    
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [traceVisible]);
+
   const filteredTasks =
     filter === "All" ? tasks : tasks.filter((t: Task) => t.status === filter);
 
   const updateStatus = (id: string, newStatus: string) => {
     setTasks((prev: Task[]) =>
-      prev.map((task: Task) =>
-        task.id === id
-          ? {
-              ...task,
-              status: newStatus,
-              lastUpdated: new Date().toISOString(),
-              contextSwitchCount: (task.contextSwitchCount || 0) + 1,
-              focusActiveDuringUpdate: focusMode,
-            }
-          : task
-      )
+      prev.map((task: Task) => {
+        if (task.id === id) {
+          const oldStatus = task.status;
+          const historyEntry = {
+            date: new Date().toISOString(),
+            oldStatus,
+            newStatus,
+          };
+          
+          return {
+            ...task,
+            status: newStatus,
+            lastUpdated: new Date().toISOString(),
+            contextSwitchCount: (task.contextSwitchCount || 0) + 1,
+            focusActiveDuringUpdate: focusMode,
+            history: [...(task.history || []), historyEntry],
+          };
+        }
+        return task;
+      })
     );
+    
+    // Increment tasks updated today
+    setTraceData((prev) => {
+      const today = getTodayDateString();
+      if (prev.lastTraceDate !== today) {
+        return { tasksUpdatedToday: 1, lastTraceDate: today };
+      }
+      return { ...prev, tasksUpdatedToday: prev.tasksUpdatedToday + 1 };
+    });
   };
 
   const handleCreateTask = (e: React.FormEvent) => {
@@ -173,6 +260,7 @@ export default function App() {
       priority: newTask.priority,
       lastUpdated: new Date().toISOString(),
       contextSwitchCount: 0,
+      history: [],
     };
 
     setTasks((prev) => [...prev, task]);
@@ -189,6 +277,10 @@ export default function App() {
     setFocusMode((prev) => !prev);
   };
 
+  const toggleTrace = () => {
+    setTraceVisible((prev) => !prev);
+  };
+
   const counts = {
     total: tasks.length,
     "In Progress": tasks.filter((t: Task) => t.status === "In Progress").length,
@@ -196,8 +288,15 @@ export default function App() {
     Blocked: tasks.filter((t: Task) => t.status === "Blocked").length,
   };
 
+  // Cognitive Trace Metrics
+  const avgContextSwitch = tasks.length > 0
+    ? Math.round(tasks.reduce((sum, t) => sum + (t.contextSwitchCount || 0), 0) / tasks.length)
+    : 0;
+  
+  const focusUpdates = tasks.filter((t) => t.focusActiveDuringUpdate === true).length;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <header className="mb-8 flex items-start justify-between">
           <div>
@@ -431,6 +530,7 @@ export default function App() {
           ))}
         </div>
 
+        <h2 className="sr-only">Task Board</h2>
         <div
           className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
           aria-live="polite"
@@ -448,7 +548,7 @@ export default function App() {
               <div
                 key={task.id}
                 data-testid={`card-task-${task.id}`}
-                className="bg-card border border-muted p-5 rounded-xl hover:border-foreground/10 hover:shadow-none transition-all duration-200 ease-out"
+                className="bg-card border border-muted p-5 rounded-lg hover:border-foreground/10 hover:shadow-none transition-all duration-200 ease-out"
               >
                 <div className="mb-4">
                   <div className="flex items-start gap-2 mb-2">
@@ -459,7 +559,7 @@ export default function App() {
                     <h2
                       className={`${
                         focusMode ? "text-[1.1rem]" : "text-base"
-                      } font-medium text-card-foreground flex-1`}
+                      } font-semibold text-card-foreground flex-1`}
                     >
                       {task.title}
                     </h2>
@@ -470,14 +570,14 @@ export default function App() {
                   >
                     {getRelativeTime(task.lastUpdated)}
                   </p>
-                  <div className="flex gap-2 mb-3">
+                  <div className="flex gap-2">
                     <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-muted">
                       {task.assignee}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-muted">
+                <div className="flex items-center justify-between pt-3 mt-3 border-t border-border/30">
                   <div className="flex items-center gap-2">
                     <StatusIcon className={`w-4 h-4 ${statusConfig.iconColor}`} />
                     <span
@@ -503,6 +603,55 @@ export default function App() {
             );
           })}
         </div>
+      </div>
+
+      {/* Cognitive Trace Panel */}
+      <div className="fixed bottom-0 left-0 right-0">
+        <button
+          data-testid="button-toggle-trace"
+          onClick={toggleTrace}
+          className="w-full bg-muted/30 border-t border-border/40 py-2 px-4 text-xs text-muted-foreground hover:bg-muted/50 transition-all duration-200 ease-out"
+          aria-label={traceVisible ? "Hide cognitive trace" : "Show cognitive trace"}
+          aria-controls="cognitive-trace-panel"
+          aria-expanded={traceVisible}
+        >
+          <div className="max-w-6xl mx-auto flex items-center justify-center gap-2">
+            <Activity className="w-3.5 h-3.5" />
+            <span>Trace</span>
+          </div>
+        </button>
+
+        {traceVisible && (
+          <div
+            id="cognitive-trace-panel"
+            data-testid="panel-cognitive-trace"
+            className="bg-muted/30 border-t border-border/40 rounded-t-lg"
+          >
+            <div className="max-w-6xl mx-auto px-4 py-3">
+              <h2 className="sr-only">Cognitive Trace</h2>
+              <div className="flex flex-wrap gap-6 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <span className="uppercase tracking-wide">Avg Context Switch</span>
+                  <span className="font-semibold text-foreground" data-testid="metric-avg-context-switch">
+                    {avgContextSwitch}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="uppercase tracking-wide">Focus Updates</span>
+                  <span className="font-semibold text-foreground" data-testid="metric-focus-updates">
+                    {focusUpdates}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="uppercase tracking-wide">Updated Today</span>
+                  <span className="font-semibold text-foreground" data-testid="metric-updated-today">
+                    {traceData.tasksUpdatedToday}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

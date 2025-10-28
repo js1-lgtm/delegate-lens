@@ -1,0 +1,67 @@
+🧭 Objective
+
+Advance the current App.tsx implementation into Phase 5 – Attention Architecture Integration, extending functionality for calm, data-aware introspection.
+Preserve the silent, paper-like luxury interface.
+Focus on invisible intelligence: context awareness, reflection, and light data surfacing — not noise.
+
+🔧 Functional and UX Improvements
+
+Add “Cognitive Trace Panel” (Phase 5 Preview Area)
+
+At the bottom of the page, add a discreet collapsible panel titled “Cognitive Trace.”
+
+This panel displays three live metrics aggregated from all tasks:
+
+Average context switch count (rounded).
+
+Number of tasks updated while Focus Mode was active.
+
+Total tasks updated today.
+
+Panel default state: collapsed → tap or click “Trace” button in footer to toggle.
+
+Keep visual design minimalist: text-xs text-muted-foreground bg-muted/30 border-t border-border/40 rounded-t-lg px-4 py-3.
+
+Persist collapsed/expanded state via localStorage (delegate-lens-trace-visible).
+
+Implement Automatic Daily Reset Logic for Today Counters
+
+Add internal variable lastTraceDate (store in localStorage).
+
+If the stored date ≠ today’s date, reset “tasks updated today” to 0.
+
+Increment counter every time a task status changes.
+
+Enhance Task Lifecycle Memory
+
+Extend Task type with history?: { date: string; oldStatus: string; newStatus: string }[].
+
+On every status change, append a record to history.
+
+Do not render yet — store silently in localStorage.
+
+This will enable timeline visualization in Phase 6 (“Focus Frame Insight”).
+
+Visual and Typographic Micro-Adjustments
+
+Slightly reduce card border radius (rounded-lg instead of rounded-xl).
+
+Add subtle card separator rule between title and meta (border-t border-border/30 mt-3 pt-2).
+
+Adjust title font weight to font-semibold for sharper legibility on large displays.
+
+Ensure focus mode enlargement still respects these adjustments.
+
+Accessibility and Keyboard Finalization
+
+Add aria-controls and aria-expanded to the Trace toggle button.
+
+Ensure Escape key closes Trace panel when open.
+
+Add hidden <h2> section headers for assistive navigation (“Task Board”, “Cognitive Trace”).
+
+Data Structure Preparation for Attention Architecture Merge
+
+Introduce top-level const TRACE_KEY = "delegate-lens-trace-data".
+
+Store object:
