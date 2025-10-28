@@ -1,0 +1,78 @@
+🧭 Objective
+
+Refine the current App.tsx implementation of Delegate Lens to elevate the Quiet Technology / High-Net-Worth Solutions Provider experience.
+Do not change architecture, routing, or external dependencies.
+Focus on sensory clarity, effortless flow, and emotional calm.
+
+🔧 Functional & Visual Improvements to Implement
+
+Implement Task Priority Indicator
+
+Extend the priority field (High, Normal, Low).
+
+Display a small colored dot or label next to each task title (e.g., red for High, gray for Normal, blue for Low).
+
+Add a priority selector to the New Task form.
+
+Persist priority via localStorage.
+
+Introduce Subtle Focus Mode (Toggle Quiet View)
+
+Add a small button in the header (e.g., 🕯 icon or text “Focus Mode”).
+
+When activated, dim non-essential UI (summary bar and filter buttons fade to 50% opacity).
+
+Maintain functionality but visually reduce clutter — simulate executive focus.
+
+Save focus-mode state to localStorage.
+
+Refine Layout Consistency
+
+Make card padding uniform (p-5) and reduce hover shadow to hover:shadow-sm.
+
+Replace hard border-border/50 with border-muted for softer contrast.
+
+Ensure summary counts use the same font size and weight across statuses.
+
+Enhance Keyboard Accessibility & Flow
+
+Ensure all interactive elements (New Task, filters, dropdowns) are reachable via Tab order.
+
+Add aria-labels to interactive buttons for screen reader clarity.
+
+Preserve the “calm UX” principle — no visible outline except subtle focus ring.
+
+Prepare for Cross-Prototype Integration (Attention Architecture)
+
+Add a non-visible lastUpdated: string field to each task (schema only, do not render).
+
+This will later enable context-switch logging for the “Attention Architecture” prototype.
+
+🎨 Design Principles to Preserve
+
+Quiet palette (white / gray / slate) and ample breathing space.
+
+No animations, loaders, or notifications.
+
+Maintain “Luxury through Simplicity.”
+
+All new features should disappear into the experience, not announce themselves.
+
+📁 File to Edit
+
+client/src/App.tsx
+(Optionally split into components/TaskCard.tsx if needed for clarity.)
+
+✅ Acceptance Criteria
+
+New priority system implemented and persisted.
+
+Focus Mode toggle works and persists across sessions.
+
+Layout and typography remain balanced and minimal.
+
+Accessibility compliance without breaking visual silence.
+
+lastUpdated field added to schema for future cross-prototype use.
+
+Once finished, please display the complete updated App.tsx for review.

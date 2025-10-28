@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { CheckCircle2, Clock, AlertCircle, Plus } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, Plus, Focus } from "lucide-react";
 
 const STORAGE_KEY = "delegate-lens-tasks";
+const FOCUS_MODE_KEY = "delegate-lens-focus-mode";
 
 type Task = {
   id: string;
@@ -9,6 +10,7 @@ type Task = {
   assignee: string;
   status: string;
   priority?: string;
+  lastUpdated?: string;
 };
 
 const initialTasks: Task[] = [
@@ -17,7 +19,8 @@ const initialTasks: Task[] = [
     title: "Prepare quarterly board presentation",
     assignee: "Executive",
     status: "In Progress",
-    priority: "Normal",
+    priority: "High",
+    lastUpdated: new Date().toISOString(),
   },
   {
     id: "2",
@@ -25,6 +28,7 @@ const initialTasks: Task[] = [
     assignee: "Assistant",
     status: "Done",
     priority: "Normal",
+    lastUpdated: new Date().toISOString(),
   },
   {
     id: "3",
@@ -32,6 +36,7 @@ const initialTasks: Task[] = [
     assignee: "Executive",
     status: "Blocked",
     priority: "Normal",
+    lastUpdated: new Date().toISOString(),
   },
 ];
 
@@ -53,6 +58,21 @@ const statusColorMap = {
   },
 };
 
+const priorityConfig = {
+  High: {
+    dot: "bg-red-500",
+    label: "text-red-600",
+  },
+  Normal: {
+    dot: "bg-slate-400",
+    label: "text-slate-600",
+  },
+  Low: {
+    dot: "bg-blue-500",
+    label: "text-blue-600",
+  },
+};
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
@@ -64,11 +84,20 @@ export default function App() {
   });
 
   const [filter, setFilter] = useState("All");
+  const [focusMode, setFocusMode] = useState(() => {
+    try {
+      const stored = localStorage.getItem(FOCUS_MODE_KEY);
+      return stored === "true";
+    } catch {
+      return false;
+    }
+  });
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
     assignee: "Executive",
     status: "In Progress",
+    priority: "Normal",
   });
 
   useEffect(() => {
@@ -79,13 +108,23 @@ export default function App() {
     }
   }, [tasks]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(FOCUS_MODE_KEY, focusMode.toString());
+    } catch (error) {
+      console.error("Failed to save focus mode:", error);
+    }
+  }, [focusMode]);
+
   const filteredTasks =
     filter === "All" ? tasks : tasks.filter((t: Task) => t.status === filter);
 
   const updateStatus = (id: string, newStatus: string) => {
     setTasks((prev: Task[]) =>
       prev.map((task: Task) =>
-        task.id === id ? { ...task, status: newStatus } : task
+        task.id === id
+          ? { ...task, status: newStatus, lastUpdated: new Date().toISOString() }
+          : task
       )
     );
   };
@@ -99,12 +138,22 @@ export default function App() {
       title: newTask.title,
       assignee: newTask.assignee,
       status: newTask.status,
-      priority: "Normal",
+      priority: newTask.priority,
+      lastUpdated: new Date().toISOString(),
     };
 
     setTasks((prev) => [...prev, task]);
-    setNewTask({ title: "", assignee: "Executive", status: "In Progress" });
+    setNewTask({
+      title: "",
+      assignee: "Executive",
+      status: "In Progress",
+      priority: "Normal",
+    });
     setShowNewTaskForm(false);
+  };
+
+  const toggleFocusMode = () => {
+    setFocusMode((prev) => !prev);
   };
 
   const counts = {
@@ -126,20 +175,36 @@ export default function App() {
               Track delegated tasks between executive and assistant
             </p>
           </div>
-          <button
-            data-testid="button-new-task"
-            onClick={() => setShowNewTaskForm(!showNewTaskForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New Task
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              data-testid="button-focus-mode"
+              onClick={toggleFocusMode}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                focusMode
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-background text-foreground border-border hover:bg-muted"
+              }`}
+              aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
+            >
+              <Focus className="w-4 h-4" />
+              Focus
+            </button>
+            <button
+              data-testid="button-new-task"
+              onClick={() => setShowNewTaskForm(!showNewTaskForm)}
+              className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-colors"
+              aria-label="Create new task"
+            >
+              <Plus className="w-4 h-4" />
+              New Task
+            </button>
+          </div>
         </header>
 
         {showNewTaskForm && (
           <div
             data-testid="form-new-task"
-            className="mb-8 p-6 bg-muted/30 border border-border/50 rounded-lg"
+            className="mb-8 p-6 bg-muted/30 border border-muted rounded-lg"
           >
             <h3 className="text-sm font-medium text-foreground mb-4">
               Create New Task
@@ -165,7 +230,7 @@ export default function App() {
                   autoFocus
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label
                     htmlFor="task-assignee"
@@ -207,12 +272,34 @@ export default function App() {
                     <option value="Blocked">Blocked</option>
                   </select>
                 </div>
+                <div>
+                  <label
+                    htmlFor="task-priority"
+                    className="block text-xs font-medium text-muted-foreground mb-2"
+                  >
+                    Priority
+                  </label>
+                  <select
+                    id="task-priority"
+                    data-testid="select-task-priority"
+                    value={newTask.priority}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, priority: e.target.value })
+                    }
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+                  >
+                    <option value="High">High</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
               </div>
               <div className="flex gap-3 pt-2">
                 <button
                   data-testid="button-submit-task"
                   type="submit"
                   className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-colors"
+                  aria-label="Submit new task"
                 >
                   Create Task
                 </button>
@@ -225,9 +312,11 @@ export default function App() {
                       title: "",
                       assignee: "Executive",
                       status: "In Progress",
+                      priority: "Normal",
                     });
                   }}
                   className="px-4 py-2 bg-background text-foreground border border-border rounded-lg text-sm font-medium hover:bg-muted transition-colors"
+                  aria-label="Cancel new task"
                 >
                   Cancel
                 </button>
@@ -236,7 +325,10 @@ export default function App() {
           </div>
         )}
 
-        <div className="mb-8 flex gap-3 flex-wrap">
+        <div
+          className="mb-8 flex gap-3 flex-wrap transition-opacity duration-300"
+          style={{ opacity: focusMode ? 0.5 : 1 }}
+        >
           <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Total
@@ -283,11 +375,13 @@ export default function App() {
               key={f}
               data-testid={`button-filter-${f.toLowerCase().replace(" ", "-")}`}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-300 ${
                 filter === f
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background text-foreground border-border hover:bg-muted"
               }`}
+              style={{ opacity: focusMode ? 0.5 : 1 }}
+              aria-label={`Filter tasks by ${f}`}
             >
               {f}
             </button>
@@ -299,28 +393,39 @@ export default function App() {
             const statusConfig =
               statusColorMap[task.status as keyof typeof statusColorMap];
             const StatusIcon = statusConfig.icon;
+            const priority = task.priority || "Normal";
+            const priorityStyle =
+              priorityConfig[priority as keyof typeof priorityConfig];
 
             return (
               <div
                 key={task.id}
                 data-testid={`card-task-${task.id}`}
-                className="bg-card border border-border/50 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                className="bg-card border border-muted p-5 rounded-xl shadow-sm hover:shadow-sm transition-shadow"
               >
                 <div className="mb-4">
-                  <h2 className="text-base font-medium text-card-foreground mb-3">
-                    {task.title}
-                  </h2>
+                  <div className="flex items-start gap-2 mb-3">
+                    <div
+                      className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${priorityStyle.dot}`}
+                      aria-label={`Priority: ${priority}`}
+                    ></div>
+                    <h2 className="text-base font-medium text-card-foreground flex-1">
+                      {task.title}
+                    </h2>
+                  </div>
                   <div className="flex gap-2 mb-3">
-                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/50">
+                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-muted">
                       {task.assignee}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                <div className="flex items-center justify-between pt-3 border-t border-muted">
                   <div className="flex items-center gap-2">
                     <StatusIcon className={`w-4 h-4 ${statusConfig.iconColor}`} />
-                    <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusConfig.badge}`}>
+                    <span
+                      className={`text-xs font-medium px-3 py-1 rounded-full ${statusConfig.badge}`}
+                    >
                       {task.status}
                     </span>
                   </div>
@@ -330,6 +435,7 @@ export default function App() {
                     value={task.status}
                     onChange={(e) => updateStatus(task.id, e.target.value)}
                     className="text-xs border border-input bg-background rounded-md px-2 py-1.5 text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+                    aria-label={`Change status for ${task.title}`}
                   >
                     <option value="In Progress">In Progress</option>
                     <option value="Done">Done</option>
