@@ -75,9 +75,9 @@ const statusColorMap = {
     iconColor: "text-slate-500",
   },
   Done: {
-    badge: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+    badge: "bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400",
     icon: CheckCircle2,
-    iconColor: "text-slate-500",
+    iconColor: "text-green-500",
   },
   Blocked: {
     badge: "bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400",
@@ -943,8 +943,11 @@ export default function App() {
                   >
                     {getRelativeTime(task.lastUpdated)}
                   </p>
-                  <div className="flex gap-2">
-                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/30">
+                  <div className="flex flex-col gap-1 ml-4 mb-2">
+                    <span className="text-[13px] font-medium text-muted-foreground/80">
+                      Assigned to: <span className="text-foreground font-semibold">{task.assignee}</span>
+                    </span>
+                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/30 w-fit">
                       {task.assignee}
                     </span>
                   </div>

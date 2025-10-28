@@ -1,0 +1,53 @@
+🧭 Objective
+
+Apply the final design polish and semantic clarity amendments before release lock.
+Focus: visual coherence and improved status readability.
+
+🎯 Amendments
+
+✅ “Done” Status Visual Enhancement
+
+Update the Done status color mapping in statusColorMap to display in green tones instead of gray. Done: {
+  badge: "bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400",
+  icon: CheckCircle2,
+  iconColor: "text-green-500",
+},
+This aligns visual perception of completion with positive cognitive reinforcement.
+
+👥 Display Assignee Name Prominently on Task Cards
+
+On each task card, display the assignee’s name clearly underneath the title, even outside of the badge — to improve at-a-glance accountability.
+
+Modify the relevant JSX section (currently shows the small badge {task.assignee}) as follows: <div className="flex flex-col gap-1 ml-4 mb-2">
+  <span className="text-[13px] font-medium text-muted-foreground/80">
+    Assigned to: <span className="text-foreground font-semibold">{task.assignee}</span>
+  </span>
+  <span className="text-xs font-medium px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/30 w-fit">
+    {task.assignee}
+  </span>
+</div>
+Ensure consistent spacing (ml-4 mb-2) and that this appears below the task title, but above the status selector.
+
+🌿 Verify Green Palette Contrast
+
+Confirm that the new green tones (text-green-600, dark:text-green-400) pass WCAG AA contrast on both light and dark backgrounds.
+
+If insufficient contrast is detected, bump saturation slightly (text-green-700 / dark:text-green-300).
+
+📁 File to Edit
+client/src/App.tsx
+
+✅ Acceptance Criteria
+
+“Done” badges and icons appear in a calm, readable green.
+
+Each task card clearly shows “Assigned to: [Name]” in a readable, balanced hierarchy.
+
+No layout disruption to grid flow or spacing.
+
+Color and spacing changes propagate consistently across all modes (focus / presentation / insight).
+
+No warnings or regressions in console.
+
+Final Commit Tag:
+feat: visual-clarity-final — add green Done badge + assignee name display
