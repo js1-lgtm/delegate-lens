@@ -8,6 +8,22 @@ The application is built as a full-stack TypeScript application with a React fro
 
 ## Recent Changes
 
+**v1.0 Release Candidate 1 (Completed - October 28, 2025)**
+Final pre-release refinements achieving production-ready quality:
+- **Performance optimization**: All localStorage debounce delays reduced from 150ms to 100ms for smoother, more responsive UI updates
+- **Visual enhancements**: Task cards now display subtle shadows (`shadow-sm`, `hover:shadow-md`) for improved depth contrast
+- **Presentation mode improvements**: 
+  - Metrics font size increased from 12px to 14px for better executive readability
+  - Added `cursor-default` to non-interactive text to prevent selection flicker
+  - Footer updated to "Delegate Lens · v1.0 · Cognitive Clarity Suite · Release Candidate R1"
+- **Accessibility upgrades**:
+  - Task grid enhanced with `role="region"` and `aria-label="Task board"` for screen reader navigation
+  - All ARIA labels verified to use proper verbs ("Enter presentation mode", "Exit presentation mode", "Close insight overlay")
+- **Code quality**: All imports verified (no unused code), TypeScript strict mode compliant, no console errors
+- **Data consistency**: Confirmed daily reset logic and 7-day data expiration working correctly
+- **Testing**: Comprehensive e2e validation passed, architect review approved
+- **Status**: Production-ready for v1.0 launch
+
 **Phase 8: Release Lock (Completed - October 28, 2025)**
 Final production polish achieving "executive calm" aesthetic through micro-refinements:
 - Visual rhythm: Borders updated to border-border/30, card padding to p-5, hover states with shadow-sm
