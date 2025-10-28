@@ -1,0 +1,72 @@
+🧭 Objective
+
+Refine the current App.tsx implementation of Delegate Lens to align with the original Quiet Technology / High-Net-Worth Solutions Provider design philosophy.
+Do not introduce unnecessary animations, third-party APIs, or backend calls.
+Focus only on clarity, calmness, and autonomy.
+
+🔧 Functional Improvements to Implement
+
+Add “New Task” Creation Flow
+
+Create a lightweight “New Task” button placed at the top-right above the summary bar.
+
+When clicked, open a minimal inline form (not a modal) with three fields: Title, Assignee, Status (drop-down).
+
+On submit, append the new task to the list and automatically persist to localStorage.
+
+Form resets after submission.
+
+Improve Status Label Consistency
+
+Replace the hard-coded string logic with a statusColorMap object to keep Tailwind classes consistent across cards and filters.
+
+Ensure “Blocked” uses a softer red tint (e.g., bg-red-50 text-red-600) to maintain “quiet” visual tone.
+
+Streamline Summary Bar Visual Hierarchy
+
+Slightly reduce padding (px-3 py-1.5) and font size of the status counts.
+
+Ensure counts remain in one row on desktop and wrap gracefully on mobile.
+
+Remove excessive borders; keep a single subtle divider (border-border/50).
+
+Add Subtle Focus Feedback for Dropdowns
+
+Use a soft ring (focus:ring-1 focus:ring-ring/50) when editing status or adding tasks.
+
+Maintain accessibility (visible keyboard focus).
+
+Prepare for Future Delegation Depth
+
+Update the Task type to include an optional priority?: string field (default = "Normal").
+
+Do not yet display it, only update the schema for future extension.
+
+🎨 Design Principles to Preserve
+
+Keep spacing generous and typography calm.
+
+Maintain a black-white-gray-neutral palette with minimal accent color.
+
+No animations, loaders, or floating panels.
+
+“Luxury through simplicity.”
+
+📁 Files to Edit
+
+client/src/App.tsx
+(Add small supporting components within the same file if necessary.)
+
+✅ Acceptance Criteria
+
+User can add new tasks inline without leaving the dashboard.
+
+All tasks persist via localStorage.
+
+Summary bar, filters, and cards update immediately after new task creation.
+
+Visual hierarchy and quiet style are preserved.
+
+No breaking of Tailwind or TypeScript types.
+
+Once finished, please display the full updated App.tsx code for review.
