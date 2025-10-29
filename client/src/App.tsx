@@ -1,5 +1,5 @@
-// Delegate Lens v1.0 · Cognitive Clarity Suite · Release Candidate R2
-// Final review: Replit QA, 2025-10-29
+// Delegate Lens v1.0.0 · Cognitive Clarity Suite · Stable Release
+// Finalized: 2025-10-29 · Replit QA + OpenAI Chat Review
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { CheckCircle2, Clock, AlertCircle, Plus, Focus, Activity } from "lucide-react";
@@ -1203,7 +1203,7 @@ export default function App() {
           </div>
           {/* Brand Signature Footer */}
           <div className="text-[10px] text-muted-foreground/50 text-center py-1 tracking-widest uppercase">
-            Delegate Lens · v1.0 · Cognitive Clarity Suite · Release Candidate R1
+            Delegate Lens · v1.0.0 · Cognitive Clarity Suite · Stable Release
           </div>
         </div>
       )}
