@@ -1,0 +1,69 @@
+Please perform the following automated Pre-Deployment Verification Script for Delegate Lens v1.0.1 Stable.
+
+Objective: confirm readiness for deployment after recent UI refinements (Assignee Role + Name and Top-Left Task Ordering).
+
+Execute these verification steps exactly as described below:
+
+───────────────────────────────
+🧩 SECTION 1 — Data Creation & Display
+
+1️⃣ In the running app, create a new task using the “New Task” button.
+   • Set Role → “Assistant”
+   • Set Name → “Sarah”
+   • Title → “Prepare vendor contract summary”
+   • Status → “In Progress”
+   • Priority → “High”
+
+2️⃣ Confirm that the new task card immediately appears at the **top-left** of the dashboard grid.
+
+3️⃣ Verify the label on the task card reads:
+   Assigned to: Assistant (Sarah)
+
+───────────────────────────────
+💾 SECTION 2 — Persistence & Reload
+
+4️⃣ Refresh the browser tab (simulate reload).
+   • Confirm the same task reappears with all fields intact.
+   • Confirm “Assigned to: Assistant (Sarah)” still displays.
+
+───────────────────────────────
+🔄 SECTION 3 — Status & History Logic
+
+5️⃣ Change that task’s status sequentially:
+   “In Progress” → “Done” → “Blocked”.
+
+6️⃣ Click “View History”.
+   • Confirm history now lists those status changes in order, with timestamps.
+
+───────────────────────────────
+📊 SECTION 4 — Metrics & Insights
+
+7️⃣ Click “Insight”.
+   • Verify overlay opens and displays:
+     – “Top 3 Tasks by Context Switch”
+     – “Most Recently Updated”
+     – “Total Switches”
+   • Close overlay via “Close Insight” button.
+
+8️⃣ Enter “Presentation Mode”.
+   • Verify Trace Metrics and Focus Insights panels render correctly.
+   • Exit presentation mode again.
+
+───────────────────────────────
+📱 SECTION 5 — General Functionality
+
+9️⃣ Confirm page responsiveness by resizing the window; cards re-flow cleanly in grid.
+
+🔟 Open DevTools → Application → Local Storage.
+   • Verify that tasks include both `assigneeRole` and `assigneeName` keys.
+   • Confirm no “undefined” values appear.
+
+───────────────────────────────
+✅ RESULT EXPECTATION
+
+If all steps above succeed without console errors, mark build as:
+
+Delegate Lens v1.0.1 · Stable · Pre-Deployment Verification PASSED.
+
+───────────────────────────────
+Do not alter code during this check; only observe and confirm results.

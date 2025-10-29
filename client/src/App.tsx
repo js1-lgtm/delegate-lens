@@ -1083,7 +1083,7 @@ export default function App() {
                         data-testid={`history-${task.id}`}
                         className="mt-2 space-y-1 transition-all duration-200 ease-out"
                       >
-                        {task.history.slice(-3).reverse().map((entry, idx) => (
+                        {task.history.slice(-3).map((entry, idx) => (
                           <div
                             key={idx}
                             className="text-[11px] text-muted-foreground/70 ml-2"
