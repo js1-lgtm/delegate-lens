@@ -1,3 +1,6 @@
+// Delegate Lens v1.0 · Cognitive Clarity Suite · Release Candidate R2
+// Final review: Replit QA, 2025-10-29
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { CheckCircle2, Clock, AlertCircle, Plus, Focus, Activity } from "lucide-react";
 
@@ -142,6 +145,11 @@ function isDataOlderThan7Days(isoDate: string): boolean {
   return diffDays > 7;
 }
 
+/**
+ * Debounce utility: Delays function execution until after `delay` ms of inactivity.
+ * Used for all localStorage writes to prevent excessive I/O during rapid state changes.
+ * Performance: 100ms delay balances responsiveness with write efficiency.
+ */
 function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): (...args: Parameters<T>) => void {
   let timeoutId: NodeJS.Timeout;
   return (...args: Parameters<T>) => {
@@ -267,7 +275,12 @@ export default function App() {
 
   const insightOverlayRef = useRef<HTMLDivElement>(null);
 
-  // Debounced localStorage save functions
+  /**
+   * DEBOUNCED LOCALSTORAGE PERSISTENCE
+   * All state changes trigger debounced saves (100ms delay) to prevent excessive writes.
+   * Each save function is wrapped in useCallback with empty deps to prevent recreation.
+   * Silent fail pattern ensures localStorage errors don't disrupt UX.
+   */
   const debouncedSaveTasks = useCallback(
     debounce((tasks: Task[]) => {
       try {
@@ -405,22 +418,33 @@ export default function App() {
     }
   }, [insightData, debouncedSaveInsightData]);
 
-  // Daily boundary observer: auto-reset trace at midnight and clear expired data
+  /**
+   * DAILY BOUNDARY OBSERVER
+   * Critical feature: Automatically resets trace metrics at midnight and expires old data.
+   * 
+   * Behavior:
+   * - Checks date boundary on mount + every 60 seconds
+   * - Resets "Updated Today" count when date changes (handles overnight sessions)
+   * - Clears trace/insight data older than 7 days (TTL enforcement)
+   * 
+   * Why: Ensures dashboard stays current even if app remains open across midnight
+   * without requiring user interaction or status updates to trigger refresh.
+   */
   useEffect(() => {
     const checkDateBoundary = () => {
       const today = getTodayDateString();
       
-      // Reset trace if date changed
+      // Reset trace if date changed (midnight boundary)
       if (traceData.lastTraceDate !== today) {
         setTraceData({ tasksUpdatedToday: 0, lastTraceDate: today });
       }
       
-      // Clear trace if older than 7 days
+      // Clear trace if older than 7 days (TTL expiration)
       if (isDataOlderThan7Days(traceData.lastTraceDate)) {
         setTraceData({ tasksUpdatedToday: 0, lastTraceDate: today });
       }
       
-      // Clear insight data if older than 7 days
+      // Clear insight data if older than 7 days (TTL expiration)
       if (insightData?.generatedAt && isDataOlderThan7Days(insightData.generatedAt)) {
         setInsightData(null);
         setInsightVisible(false);
@@ -453,7 +477,18 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleEscape);
   }, [traceVisible, insightVisible, presentationMode]);
 
-  // Focus trap for insight overlay
+  /**
+   * FOCUS TRAP FOR INSIGHT OVERLAY
+   * Accessibility feature: Traps keyboard focus within modal to prevent background interaction.
+   * 
+   * Behavior:
+   * - Auto-focuses first focusable element when overlay opens
+   * - Tab cycles forward through focusable elements (wraps from last to first)
+   * - Shift+Tab cycles backward (wraps from first to last)
+   * 
+   * Why: WCAG 2.1 AA compliance - modal dialogs must contain focus to prevent
+   * keyboard users from accidentally interacting with inert background content.
+   */
   useEffect(() => {
     if (insightVisible && insightOverlayRef.current) {
       const overlay = insightOverlayRef.current;
@@ -466,11 +501,13 @@ export default function App() {
       const handleTab = (e: KeyboardEvent) => {
         if (e.key === "Tab") {
           if (e.shiftKey) {
+            // Shift+Tab: wrap from first to last
             if (document.activeElement === firstElement) {
               e.preventDefault();
               lastElement?.focus();
             }
           } else {
+            // Tab: wrap from last to first
             if (document.activeElement === lastElement) {
               e.preventDefault();
               firstElement?.focus();
