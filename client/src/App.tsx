@@ -405,6 +405,37 @@ export default function App() {
     }
   }, [insightData, debouncedSaveInsightData]);
 
+  // Daily boundary observer: auto-reset trace at midnight and clear expired data
+  useEffect(() => {
+    const checkDateBoundary = () => {
+      const today = getTodayDateString();
+      
+      // Reset trace if date changed
+      if (traceData.lastTraceDate !== today) {
+        setTraceData({ tasksUpdatedToday: 0, lastTraceDate: today });
+      }
+      
+      // Clear trace if older than 7 days
+      if (isDataOlderThan7Days(traceData.lastTraceDate)) {
+        setTraceData({ tasksUpdatedToday: 0, lastTraceDate: today });
+      }
+      
+      // Clear insight data if older than 7 days
+      if (insightData?.generatedAt && isDataOlderThan7Days(insightData.generatedAt)) {
+        setInsightData(null);
+        setInsightVisible(false);
+      }
+    };
+    
+    // Check immediately on mount
+    checkDateBoundary();
+    
+    // Check every minute for date boundary crossing
+    const interval = setInterval(checkDateBoundary, 60000);
+    
+    return () => clearInterval(interval);
+  }, [traceData, insightData]);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -926,7 +957,7 @@ export default function App() {
                 className={`bg-card border border-border/30 p-5 rounded-xl shadow-sm hover:shadow-md hover:border-foreground/10 transition-shadow transition-all duration-200 ease-out ${
                   presentationMode ? 'opacity-0 animate-fade-in' : ''
                 }`}
-                style={presentationMode ? { animation: 'fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards' } : undefined}
+                style={presentationMode ? { animation: 'fadeIn 200ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards' } : undefined}
               >
                 <div className="mb-4">
                   <div className="flex items-start gap-2 mb-2">
