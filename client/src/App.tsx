@@ -17,7 +17,8 @@ const FILTER_KEY = "delegate-lens-filter";
 type Task = {
   id: string;
   title: string;
-  assignee: string;
+  assigneeRole: string;
+  assigneeName: string;
   status: string;
   priority?: string;
   lastUpdated?: string;
@@ -42,7 +43,8 @@ const initialTasks: Task[] = [
   {
     id: "1",
     title: "Prepare quarterly board presentation",
-    assignee: "Executive",
+    assigneeRole: "Executive",
+    assigneeName: "—",
     status: "In Progress",
     priority: "High",
     lastUpdated: new Date().toISOString(),
@@ -52,7 +54,8 @@ const initialTasks: Task[] = [
   {
     id: "2",
     title: "Schedule vendor meeting for next week",
-    assignee: "Assistant",
+    assigneeRole: "Assistant",
+    assigneeName: "—",
     status: "Done",
     priority: "Normal",
     lastUpdated: new Date().toISOString(),
@@ -62,7 +65,8 @@ const initialTasks: Task[] = [
   {
     id: "3",
     title: "Review and sign contract amendments",
-    assignee: "Executive",
+    assigneeRole: "Executive",
+    assigneeName: "—",
     status: "Blocked",
     priority: "Normal",
     lastUpdated: new Date().toISOString(),
@@ -267,7 +271,8 @@ export default function App() {
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
-    assignee: "Executive",
+    assigneeRole: "Executive",
+    assigneeName: "",
     status: "In Progress",
     priority: "Normal",
   });
@@ -572,7 +577,8 @@ export default function App() {
     const task: Task = {
       id: Date.now().toString(),
       title: newTask.title.trim(),
-      assignee: newTask.assignee.trim() || "Unassigned",
+      assigneeRole: newTask.assigneeRole,
+      assigneeName: newTask.assigneeName.trim(),
       status: newTask.status,
       priority: newTask.priority,
       lastUpdated: new Date().toISOString(),
@@ -583,7 +589,8 @@ export default function App() {
     setTasks((prev) => [...prev, task]);
     setNewTask({
       title: "",
-      assignee: "Executive",
+      assigneeRole: "Executive",
+      assigneeName: "",
       status: "In Progress",
       priority: "Normal",
     });
@@ -804,30 +811,39 @@ export default function App() {
                   </p>
                 )}
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-3 mb-4">
                 <div>
-                  <label
-                    htmlFor="task-assignee"
-                    className="block text-xs font-medium text-muted-foreground mb-2"
+                  <label htmlFor="task-assignee-role" className="block text-xs font-medium text-muted-foreground mb-2">
+                    Role
+                  </label>
+                  <select
+                    id="task-assignee-role"
+                    value={newTask.assigneeRole}
+                    onChange={(e) => setNewTask({ ...newTask, assigneeRole: e.target.value })}
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
                   >
-                    Assignee (type or choose)
+                    <option value="Executive">Executive</option>
+                    <option value="Assistant">Assistant</option>
+                    <option value="Analyst">Analyst</option>
+                    <option value="Consultant">Consultant</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="task-assignee-name" className="block text-xs font-medium text-muted-foreground mb-2">
+                    Name
                   </label>
                   <input
-                    id="task-assignee"
-                    data-testid="input-task-assignee"
+                    id="task-assignee-name"
                     type="text"
-                    list="assignee-options"
-                    value={newTask.assignee}
-                    onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
-                    placeholder="Type assignee name (e.g. Sarah, Jack)..."
+                    value={newTask.assigneeName}
+                    onChange={(e) => setNewTask({ ...newTask, assigneeName: e.target.value })}
                     className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
-                    aria-required="true"
+                    placeholder="e.g. Sarah, Jamil"
                   />
-                  <datalist id="assignee-options">
-                    <option value="Executive" />
-                    <option value="Assistant" />
-                  </datalist>
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="task-status"
@@ -887,7 +903,8 @@ export default function App() {
                     setShowNewTaskForm(false);
                     setNewTask({
                       title: "",
-                      assignee: "Executive",
+                      assigneeRole: "Executive",
+                      assigneeName: "",
                       status: "In Progress",
                       priority: "Normal",
                     });
@@ -1018,7 +1035,8 @@ export default function App() {
                   </p>
                   <div className="flex flex-col gap-1 ml-4 mb-2">
                     <span className="text-[13px] font-medium text-muted-foreground/80">
-                      Assigned to: <span className="text-foreground font-semibold">{task.assignee}</span>
+                      Assigned to: <span className="text-foreground font-semibold">{task.assigneeRole}</span>
+                      {task.assigneeName ? ` (${task.assigneeName})` : ""}
                     </span>
                   </div>
                 </div>

@@ -1,0 +1,76 @@
+Please apply the following update to the current build of Delegate Lens (v1.0.0):
+
+Amend the existing "New Task" structure and UI to include a separate dropdown for "Assignee Role" and a text input for "Assignee Name", replacing the single "Assignee" dropdown.
+
+Implement precisely as follows:
+
+1️⃣ Expand the Task type definition:
+type Task = {
+  id: string;
+  title: string;
+  assigneeRole: string;
+  assigneeName: string;
+  status: string;
+  priority?: string;
+  lastUpdated?: string;
+  contextSwitchCount?: number;
+  focusActiveDuringUpdate?: boolean;
+  history?: { date: string; oldStatus: string; newStatus: string }[];
+};
+
+2️⃣ Update initialTasks so that each entry includes:
+assigneeRole: "Executive",
+assigneeName: "—",
+
+3️⃣ Update the "newTask" state initialization:
+const [newTask, setNewTask] = useState({
+  title: "",
+  assigneeRole: "Executive",
+  assigneeName: "",
+  status: "In Progress",
+  priority: "Normal",
+});
+
+4️⃣ Replace the single “Assignee” selector in the New Task form with the following two-field layout:
+
+<div className="grid grid-cols-2 gap-3">
+  <div>
+    <label htmlFor="task-assignee-role" className="block text-xs font-medium text-muted-foreground mb-2">
+      Role
+    </label>
+    <select
+      id="task-assignee-role"
+      value={newTask.assigneeRole}
+      onChange={(e) => setNewTask({ ...newTask, assigneeRole: e.target.value })}
+      className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+    >
+      <option value="Executive">Executive</option>
+      <option value="Assistant">Assistant</option>
+      <option value="Analyst">Analyst</option>
+      <option value="Consultant">Consultant</option>
+    </select>
+  </div>
+
+  <div>
+    <label htmlFor="task-assignee-name" className="block text-xs font-medium text-muted-foreground mb-2">
+      Name
+    </label>
+    <input
+      id="task-assignee-name"
+      type="text"
+      value={newTask.assigneeName}
+      onChange={(e) => setNewTask({ ...newTask, assigneeName: e.target.value })}
+      className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+      placeholder="e.g. Sarah, Jamil"
+    />
+  </div>
+</div>
+
+5️⃣ Update task card display:
+Replace any instance of `{task.assignee}` with:
+<span className="text-[13px] font-medium text-muted-foreground/80">
+  Assigned to: <span className="text-foreground font-semibold">{task.assigneeRole}</span>
+  {task.assigneeName ? ` (${task.assigneeName})` : ""}
+</span>
+
+No other logic, styling, or state management should be altered.
