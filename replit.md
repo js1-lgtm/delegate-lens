@@ -31,10 +31,22 @@ Preferred communication style: Simple, everyday language.
 Task {
   id: string (UUID)
   title: string (required, min length 1)
-  assignee: "Executive" | "Assistant" // or custom names
+  assigneeRole: "Executive" | "Assistant" | "Analyst" | "Consultant"
+  assigneeName: string (optional, freeform text for person's name)
   status: "In Progress" | "Done" | "Blocked"
+  priority: "High" | "Normal" | "Low"
+  lastUpdated: string (ISO timestamp)
+  contextSwitchCount: number
+  focusActiveDuringUpdate: boolean
+  history: Array<{ date: string, oldStatus: string, newStatus: string }>
 }
 ```
+
+**Task Creation Behavior:**
+- New tasks are inserted at the start of the tasks array using prepend logic: `setTasks((prev) => [task, ...prev])`
+- This causes newly created tasks to appear at the top-left of the dashboard grid
+- Tasks flow in grid layout: left-to-right, top-to-bottom
+- Most recent tasks always appear first
 
 ### Authentication and Authorization
 No authentication implemented; designed for single-user or trusted multi-user. Future plans include session management, user authentication, and role-based access control.

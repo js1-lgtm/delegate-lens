@@ -586,7 +586,7 @@ export default function App() {
       history: [],
     };
 
-    setTasks((prev) => [...prev, task]);
+    setTasks((prev) => [task, ...prev]);
     setNewTask({
       title: "",
       assigneeRole: "Executive",
