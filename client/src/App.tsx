@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { CheckCircle2, Clock, AlertCircle, Plus, Focus, Activity } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 
 const STORAGE_KEY = "delegate-lens-tasks";
 const FOCUS_MODE_KEY = "delegate-lens-focus-mode";
@@ -1292,6 +1293,7 @@ export default function App() {
         }
       `}</style>
       <SpeedInsights />
+      <Analytics />
     </div>
   );
 }
