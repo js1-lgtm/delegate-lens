@@ -82,5 +82,21 @@ No authentication implemented; designed for single-user or trusted multi-user. F
 - `nanoid`: Unique ID generation.
 - `@tanstack/react-query`: Async state management (configured).
 
+### Analytics and Monitoring
+- `@vercel/analytics`: Web analytics for tracking page views and user interactions (integrated in App.tsx).
+- `@vercel/speed-insights`: Performance monitoring and Core Web Vitals tracking (integrated in App.tsx).
+
+### SEO and Social Sharing
+- **Open Graph Metadata:** Complete OG tags in client/index.html for Facebook/LinkedIn sharing.
+- **Twitter Card Metadata:** Twitter-specific meta tags for enhanced social media previews.
+- **Preview Image:** Custom 1200x630px OG preview image at public/og-preview.png.
+
 ### Type System
 - TypeScript with strict mode, path aliases, and shared types between client/server.
+
+## Recent Changes (v1.0.1)
+- **2025-10-30:** Added Vercel Analytics and Speed Insights integration for production monitoring.
+- **2025-10-30:** Implemented Open Graph and Twitter Card metadata for enhanced social media sharing.
+- **2025-10-30:** Generated custom OG preview image (1200x630px) with calm minimalist design.
+- **2025-10-29:** Fixed task history display order (now shows chronological: oldest→newest).
+- **2025-10-29:** Changed task creation behavior to prepend (top-left placement).
