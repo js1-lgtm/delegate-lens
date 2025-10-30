@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://delegate-lens.vercel.app/sitemap.xml
