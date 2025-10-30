@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { CheckCircle2, Clock, AlertCircle, Plus, Focus, Activity } from "lucide-react";
 import { injectSpeedInsights } from "@vercel/speed-insights";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 injectSpeedInsights();
 
@@ -1293,6 +1294,7 @@ export default function App() {
           }
         }
       `}</style>
+      <SpeedInsights />
     </div>
   );
 }
