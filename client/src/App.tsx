@@ -1290,7 +1290,6 @@ export default function App() {
           }
         }
       `}</style>
-      <SpeedInsights />
     </div>
   );
 }
