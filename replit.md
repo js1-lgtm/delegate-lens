@@ -73,12 +73,17 @@ Backend charges in GBP (for UK accounting), frontend displays USD equivalents.
 - Base URLs for redirects sourced from trusted REPLIT_DOMAINS environment variable
 - No client-controlled redirect targets (prevents open redirect vulnerabilities)
 - Stripe API initialized without hardcoded API version (uses account default)
+- Session metadata used for plan identification (resilient to price changes, taxes, coupons)
 
 **Required Environment Variables:**
 - `STRIPE_SECRET_KEY`: Stripe secret API key (from stripe.com/dashboard/apikeys)
 - `STRIPE_WEBHOOK_SECRET`: Webhook signing secret (from Stripe Dashboard → Webhooks)
 - `VITE_STRIPE_PUBLIC_KEY`: Stripe publishable key for frontend (optional, not currently used)
 - `REPLIT_DOMAINS`: Automatically provided by Replit for production redirects
+- `EMAIL_HOST`: SMTP server address (e.g., smtp.gmail.com)
+- `EMAIL_PORT`: SMTP port (465 for secure, 587 for STARTTLS)
+- `EMAIL_USER`: Email address for sending confirmations
+- `EMAIL_PASS`: Email password or app-specific password
 
 **API Endpoints:**
 - `POST /api/create-standard-session`: Creates Standard plan (£35/mo) subscription checkout
@@ -100,6 +105,13 @@ The webhook endpoint (`/api/webhook`) handles Stripe events such as successful p
 5. Add as `STRIPE_WEBHOOK_SECRET` environment variable in Replit
 
 The webhook uses signature verification to ensure requests are legitimate Stripe events. All events are logged to the console for monitoring.
+
+**Email Confirmation:**
+When a checkout session completes successfully, the webhook automatically sends a confirmation email to the customer using nodemailer. The email includes:
+- Welcome message with purchased plan details (identified via session metadata)
+- Link to access the dashboard
+- Professional HTML formatting with responsive design
+- Graceful handling of missing email credentials (logs warning but continues processing)
 
 ## External Dependencies
 
@@ -133,10 +145,11 @@ The webhook uses signature verification to ensure requests are legitimate Stripe
 - `@tanstack/react-query`: Async state management (configured).
 - `wouter`: Lightweight routing library for React SPAs.
 
-### Payment Processing
+### Payment Processing and Email
 - `stripe`: Stripe Node.js library for payment processing.
 - `@stripe/stripe-js`: Stripe JavaScript SDK for frontend (installed but not currently used).
 - `@stripe/react-stripe-js`: React components for Stripe (installed but not currently used).
+- `nodemailer`: Email sending library for automated confirmation emails after successful payments.
 
 ### Analytics and Monitoring
 - `@vercel/analytics`: Web analytics for tracking page views and user interactions (integrated in App.tsx).
@@ -163,6 +176,12 @@ The application meets **WCAG 2.1 AA** standards with comprehensive accessibility
 - **Keyboard Navigation:** Full keyboard access to all features with visible focus indicators
 
 ## Recent Changes (v1.1.0)
+- **2025-10-31:** Email Confirmation System: Automated welcome emails for successful payments
+  - Added nodemailer integration for professional HTML confirmation emails
+  - Email includes purchased plan details, dashboard link, responsive design
+  - Graceful degradation: continues webhook processing if email credentials missing
+  - Enhanced checkout sessions with metadata (plan, plan_name) for robust product detection
+  - Metadata-based plan identification resilient to price changes, taxes, and coupons
 - **2025-10-31:** Three-Tier Pricing Implementation: Updated to Standard/Pro/Lifetime model
   - Added Pro plan: £69/month (displayed as ~$89 USD/month) for power users
   - Updated pricing page to 3-column layout with USD frontend display, GBP backend charges

@@ -74,6 +74,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/cancel`,
+        metadata: {
+          plan: "standard",
+          plan_name: "Delegate Lens Standard Monthly"
+        }
       });
       
       res.json({ url: session.url });
@@ -110,6 +114,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/cancel`,
+        metadata: {
+          plan: "pro",
+          plan_name: "Delegate Lens Pro Monthly"
+        }
       });
       
       res.json({ url: session.url });
@@ -145,6 +153,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/cancel`,
+        metadata: {
+          plan: "lifetime",
+          plan_name: "Delegate Lens Lifetime License"
+        }
       });
       
       res.json({ url: session.url });
@@ -198,19 +210,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const customerEmail = session.customer_details?.email || session.customer_email;
         if (customerEmail && emailTransporter) {
           try {
-            // Determine product name from mode and amount
-            let productName = "Delegate Lens Access";
-            const amountTotal = session.amount_total || 0;
-            
-            if (session.mode === "subscription") {
-              if (amountTotal === 3500) {
-                productName = "Delegate Lens Standard Monthly";
-              } else if (amountTotal === 6900) {
-                productName = "Delegate Lens Pro Monthly";
-              }
-            } else if (session.mode === "payment" && amountTotal === 34900) {
-              productName = "Delegate Lens Lifetime License";
-            }
+            // Determine product name from metadata (robust against price changes, taxes, coupons)
+            let productName = session.metadata?.plan_name || "Delegate Lens Access";
+            const planType = session.metadata?.plan || "unknown";
 
             await emailTransporter.sendMail({
               from: `"Delegate Lens" <${process.env.EMAIL_USER}>`,
