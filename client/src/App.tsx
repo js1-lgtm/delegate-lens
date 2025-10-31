@@ -703,7 +703,7 @@ export default function App() {
               <button
                 data-testid="button-present"
                 onClick={togglePresentationMode}
-                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
                 aria-label="Enter presentation mode"
                 aria-pressed={presentationMode}
               >
@@ -713,7 +713,7 @@ export default function App() {
               <button
                 data-testid="button-insight"
                 onClick={toggleInsight}
-                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
                 aria-label={insightVisible ? "Close insight overlay" : "Open insight overlay"}
                 aria-controls="insight-overlay"
                 aria-expanded={insightVisible}
@@ -724,7 +724,7 @@ export default function App() {
               <button
                 data-testid="button-focus-mode"
                 onClick={toggleFocusMode}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border/30 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border/30 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40 ${
                   focusMode
                     ? "bg-foreground text-background border-foreground"
                     : "bg-background text-foreground hover:bg-muted"
@@ -738,7 +738,7 @@ export default function App() {
               <button
                 data-testid="button-new-task"
                 onClick={() => setShowNewTaskForm(!showNewTaskForm)}
-                className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
                 aria-label="Create new task"
               >
                 <Plus className="w-4 h-4" aria-hidden="true" />
@@ -750,7 +750,7 @@ export default function App() {
             <button
               data-testid="button-exit-presentation"
               onClick={togglePresentationMode}
-              className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium opacity-90 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium opacity-90 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
               aria-label="Exit presentation mode"
               aria-pressed={presentationMode}
             >
@@ -795,7 +795,7 @@ export default function App() {
                     setNewTask({ ...newTask, title: e.target.value });
                     if (titleError) setTitleError("");
                   }}
-                  className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+                  className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
                   placeholder="Enter task title..."
                   aria-required="true"
                   aria-invalid={titleError ? "true" : "false"}
@@ -822,7 +822,7 @@ export default function App() {
                     id="task-assignee-role"
                     value={newTask.assigneeRole}
                     onChange={(e) => setNewTask({ ...newTask, assigneeRole: e.target.value })}
-                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
                   >
                     <option value="Executive">Executive</option>
                     <option value="Assistant">Assistant</option>
@@ -840,7 +840,7 @@ export default function App() {
                     type="text"
                     value={newTask.assigneeName}
                     onChange={(e) => setNewTask({ ...newTask, assigneeName: e.target.value })}
-                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
                     placeholder="e.g. Sarah, Jamil"
                   />
                 </div>
@@ -860,7 +860,7 @@ export default function App() {
                     onChange={(e) =>
                       setNewTask({ ...newTask, status: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
                   >
                     <option value="In Progress">In Progress</option>
                     <option value="Done">Done</option>
@@ -881,7 +881,7 @@ export default function App() {
                     onChange={(e) =>
                       setNewTask({ ...newTask, priority: e.target.value })
                     }
-                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+                    className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
                   >
                     <option value="High">High</option>
                     <option value="Normal">Normal</option>
@@ -893,7 +893,7 @@ export default function App() {
                 <button
                   data-testid="button-submit-task"
                   type="submit"
-                  className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
+                  className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
                   aria-label="Submit new task"
                 >
                   Create Task
@@ -911,7 +911,7 @@ export default function App() {
                       priority: "Normal",
                     });
                   }}
-                  className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
+                  className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
                   aria-label="Cancel new task"
                 >
                   Cancel
@@ -1030,7 +1030,7 @@ export default function App() {
                     </h2>
                   </div>
                   <p
-                    className="text-xs text-muted-foreground/90 ml-4 mb-3"
+                    className="text-xs text-muted-foreground/85 ml-4 mb-3"
                     data-testid={`text-updated-${task.id}`}
                   >
                     {getRelativeTime(task.lastUpdated)}
@@ -1058,7 +1058,7 @@ export default function App() {
                       data-testid={`select-status-${task.id}`}
                       value={task.status}
                       onChange={(e) => updateStatus(task.id, e.target.value)}
-                      className="text-xs border border-input bg-background rounded-md px-2 py-1.5 text-foreground focus:outline-none focus:ring-1 focus:ring-ring/50"
+                      className="text-xs border border-input bg-background rounded-md px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
                       aria-label={`Change status for ${task.title}`}
                     >
                       <option value="In Progress">In Progress</option>
@@ -1074,7 +1074,7 @@ export default function App() {
                     <button
                       data-testid={`button-view-history-${task.id}`}
                       onClick={() => toggleHistory(task.id)}
-                      className="text-[11px] text-muted-foreground/90 hover:text-muted-foreground transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
+                      className="text-[11px] text-muted-foreground/85 hover:text-muted-foreground transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
                       aria-label={`${historyVisible[task.id] ? 'Hide' : 'View'} history for ${task.title}`}
                     >
                       {historyVisible[task.id] ? 'Hide History' : 'View History'}
@@ -1088,7 +1088,7 @@ export default function App() {
                         {task.history.slice(-3).map((entry, idx) => (
                           <div
                             key={idx}
-                            className="text-[11px] text-muted-foreground/90 ml-2"
+                            className="text-[11px] text-muted-foreground/85 ml-2"
                           >
                             • {formatHistoryDate(entry.date)} – {entry.oldStatus} → {entry.newStatus}
                           </div>
@@ -1159,7 +1159,7 @@ export default function App() {
             <button
               data-testid="button-close-insight"
               onClick={() => setInsightVisible(false)}
-              className="w-full px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="w-full px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
               aria-label="Close insight overlay"
             >
               Close
@@ -1234,7 +1234,7 @@ export default function App() {
           <button
             data-testid="button-toggle-trace"
             onClick={toggleTrace}
-            className="w-full bg-muted/20 border-t border-border/40 py-2 px-4 text-xs text-muted-foreground hover:bg-muted/50 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
+            className="w-full bg-muted/20 border-t border-border/40 py-2 px-4 text-xs text-muted-foreground hover:bg-muted/50 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
             aria-label={traceVisible ? "Hide cognitive trace" : "Show cognitive trace"}
             aria-controls="cognitive-trace-panel"
             aria-expanded={traceVisible}
