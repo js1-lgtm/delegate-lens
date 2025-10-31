@@ -96,16 +96,22 @@ No authentication implemented; designed for single-user or trusted multi-user. F
 
 ## Accessibility Compliance
 The application meets **WCAG 2.1 AA** standards with comprehensive accessibility features:
-- **Semantic HTML:** Proper `<main>` landmark for screen reader navigation
-- **ARIA Support:** Descriptive labels on all interactive elements, proper `aria-hidden` on decorative icons
+- **Skip to Content Link:** Keyboard-accessible skip link appears on focus for easy navigation to main content
+- **Semantic HTML:** Proper `<main id="main-content">` landmark with explicit ID anchor for screen reader navigation
+- **ARIA Support:** Descriptive labels on all interactive elements, proper `aria-hidden` on decorative icons, explicit heading roles
 - **Form Labels:** All inputs linked via `htmlFor` with proper label elements
-- **Focus Visibility:** 2px focus rings on all interactive elements (buttons, inputs, selects)
+- **Focus Visibility:** Consistent :focus-visible outlines (2px solid primary color) site-wide with 3px offset for clarity
 - **Contrast Ratios:** Enhanced text contrast (muted-foreground/90-95) and background contrast (muted/20)
 - **Viewport Accessibility:** Allows pinch-to-zoom for low-vision users (no maximum-scale restriction)
 - **Status Indicators:** Color-coded with enhanced contrast (bg-green-100, bg-red-100)
-- **Keyboard Navigation:** Full keyboard access to all features
+- **Keyboard Navigation:** Full keyboard access to all features with visible focus indicators
 
 ## Recent Changes (v1.0.2)
+- **2025-10-31:** Semantic Polish Pass: Screen reader & keyboard navigation enhancements
+  - Added "Skip to Content" link (visible on focus) for keyboard users
+  - Added id="main-content" anchor to main landmark for skip link target
+  - Added explicit role="heading" aria-level={1} to h1 element for clarity
+  - Implemented consistent :focus-visible CSS (2px primary outline, 3px offset) in index.css
 - **2025-10-31:** Accessibility Pass 3: Lighthouse compliance fixes
   - Removed viewport zoom restriction (maximum-scale) for low-vision accessibility
   - Added semantic `<main>` landmark for screen reader navigation

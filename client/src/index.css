@@ -348,4 +348,10 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+
+  /* Consistent keyboard focus outlines for accessibility */
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+  }
 }

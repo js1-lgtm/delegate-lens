@@ -685,11 +685,11 @@ export default function App() {
   }, [presentationMode, tasks, insightData]);
 
   return (
-    <main className="min-h-screen bg-background pb-20" role="main">
+    <main id="main-content" className="min-h-screen bg-background pb-20" role="main">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <header className={`flex items-start justify-between ${presentationMode ? 'mb-6' : 'mb-8'}`}>
           <div>
-            <h1 className="text-2xl font-semibold text-foreground mb-1 tracking-tight">
+            <h1 className="text-2xl font-semibold text-foreground mb-1 tracking-tight" role="heading" aria-level={1}>
               {presentationMode ? 'Delegate Lens · Executive Overview' : 'Delegate Lens'}
             </h1>
             {!presentationMode && (
