@@ -74,12 +74,29 @@ No authentication implemented; designed for single-user or trusted multi-user. F
 
 **Required Environment Variables:**
 - `STRIPE_SECRET_KEY`: Stripe secret API key (from stripe.com/dashboard/apikeys)
+- `STRIPE_WEBHOOK_SECRET`: Webhook signing secret (from Stripe Dashboard → Webhooks)
 - `VITE_STRIPE_PUBLIC_KEY`: Stripe publishable key for frontend (optional, not currently used)
 - `REPLIT_DOMAINS`: Automatically provided by Replit for production redirects
 
 **API Endpoints:**
 - `POST /api/create-subscription-session`: Creates monthly subscription checkout
 - `POST /api/create-lifetime-session`: Creates lifetime license checkout
+- `POST /api/webhook`: Stripe webhook endpoint for payment event notifications
+
+**Webhook Configuration:**
+The webhook endpoint (`/api/webhook`) handles Stripe events such as successful payments, subscription changes, and cancellations. To set up webhooks in production:
+
+1. In your Stripe Dashboard, navigate to Developers → Webhooks
+2. Add endpoint URL: `https://your-app.replit.app/api/webhook`
+3. Select events to listen for:
+   - `checkout.session.completed` (payment success)
+   - `customer.subscription.created` (new subscription)
+   - `customer.subscription.updated` (subscription changes)
+   - `customer.subscription.deleted` (subscription cancelled)
+4. Copy the webhook signing secret (starts with `whsec_...`)
+5. Add as `STRIPE_WEBHOOK_SECRET` environment variable in Replit
+
+The webhook uses signature verification to ensure requests are legitimate Stripe events. All events are logged to the console for monitoring.
 
 ## External Dependencies
 

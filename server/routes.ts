@@ -8,6 +8,10 @@ if (!process.env.STRIPE_SECRET_KEY) {
   console.warn('Warning: STRIPE_SECRET_KEY not set. Stripe endpoints will fail.');
 }
 
+if (!process.env.STRIPE_WEBHOOK_SECRET) {
+  console.warn('Warning: STRIPE_WEBHOOK_SECRET not set. Webhook signature verification will fail.');
+}
+
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
@@ -91,6 +95,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Stripe lifetime session error:", err);
       res.status(500).json({ error: "Failed to create session" });
     }
+  });
+
+  // Stripe Webhook - Handle payment events
+  app.post("/api/webhook", async (req, res) => {
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
+
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      return res.status(500).json({ error: "Webhook secret not configured" });
+    }
+
+    const sig = req.headers["stripe-signature"];
+    
+    if (!sig) {
+      return res.status(400).json({ error: "Missing stripe-signature header" });
+    }
+
+    let event;
+    try {
+      // Use rawBody captured by express.json verify callback in server/index.ts
+      event = stripe.webhooks.constructEvent(
+        req.rawBody as Buffer,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err: any) {
+      console.error("Webhook signature verification failed:", err.message);
+      return res.status(400).json({ error: `Webhook Error: ${err.message}` });
+    }
+
+    // Handle different event types
+    switch (event.type) {
+      case "checkout.session.completed":
+        const session = event.data.object;
+        console.log("✅ Payment success:", {
+          sessionId: session.id,
+          customerEmail: session.customer_email,
+          amountTotal: session.amount_total,
+          mode: session.mode,
+        });
+        // Future: save customer info, send onboarding email, grant access
+        break;
+
+      case "customer.subscription.created":
+        console.log("📝 Subscription created:", event.data.object.id);
+        break;
+
+      case "customer.subscription.updated":
+        console.log("🔄 Subscription updated:", event.data.object.id);
+        break;
+
+      case "customer.subscription.deleted":
+        console.log("❌ Subscription cancelled:", event.data.object.id);
+        break;
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    res.json({ received: true });
   });
 
   const httpServer = createServer(app);
