@@ -84,12 +84,12 @@ const statusColorMap = {
     iconColor: "text-slate-500",
   },
   Done: {
-    badge: "bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400",
+    badge: "bg-green-100 text-green-600 dark:bg-green-950/30 dark:text-green-400",
     icon: CheckCircle2,
     iconColor: "text-green-500",
   },
   Blocked: {
-    badge: "bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400",
+    badge: "bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400",
     icon: AlertCircle,
     iconColor: "text-red-500",
   },
@@ -685,7 +685,7 @@ export default function App() {
   }, [presentationMode, tasks, insightData]);
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <main className="min-h-screen bg-background pb-20" role="main">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <header className={`flex items-start justify-between ${presentationMode ? 'mb-6' : 'mb-8'}`}>
           <div>
@@ -693,7 +693,7 @@ export default function App() {
               {presentationMode ? 'Delegate Lens · Executive Overview' : 'Delegate Lens'}
             </h1>
             {!presentationMode && (
-              <p className="text-sm text-muted-foreground/80">
+              <p className="text-sm text-muted-foreground/90">
                 Track delegated tasks between executive and assistant
               </p>
             )}
@@ -1019,8 +1019,9 @@ export default function App() {
                   <div className="flex items-start gap-2 mb-2">
                     <div
                       className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${priorityStyle.dot}`}
-                      aria-label={`Priority: ${priority}`}
-                    ></div>
+                      role="img"
+                      aria-hidden="true"
+                    />
                     <h2
                       className={`${
                         presentationMode ? "text-[1.05rem] font-medium" : focusMode ? "text-[1.1rem] font-semibold" : "text-base font-semibold"
@@ -1030,13 +1031,13 @@ export default function App() {
                     </h2>
                   </div>
                   <p
-                    className="text-xs text-muted-foreground/85 ml-4 mb-3"
+                    className="text-xs text-muted-foreground/95 ml-4 mb-3"
                     data-testid={`text-updated-${task.id}`}
                   >
                     {getRelativeTime(task.lastUpdated)}
                   </p>
                   <div className="flex flex-col gap-1 ml-4 mb-2">
-                    <span className="text-[13px] font-medium text-muted-foreground/80">
+                    <span className="text-[13px] font-medium text-muted-foreground/90">
                       Assigned to: <span className="text-foreground font-semibold">{task.assigneeRole}</span>
                       {task.assigneeName ? ` (${task.assigneeName})` : ""}
                     </span>
@@ -1074,7 +1075,7 @@ export default function App() {
                     <button
                       data-testid={`button-view-history-${task.id}`}
                       onClick={() => toggleHistory(task.id)}
-                      className="text-[11px] text-muted-foreground/85 hover:text-muted-foreground transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="text-[11px] text-muted-foreground/95 hover:text-muted-foreground transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
                       aria-label={`${historyVisible[task.id] ? 'Hide' : 'View'} history for ${task.title}`}
                     >
                       {historyVisible[task.id] ? 'Hide History' : 'View History'}
@@ -1088,7 +1089,7 @@ export default function App() {
                         {task.history.slice(-3).map((entry, idx) => (
                           <div
                             key={idx}
-                            className="text-[11px] text-muted-foreground/85 ml-2"
+                            className="text-[11px] text-muted-foreground/95 ml-2"
                           >
                             • {formatHistoryDate(entry.date)} – {entry.oldStatus} → {entry.newStatus}
                           </div>
@@ -1127,7 +1128,7 @@ export default function App() {
 
               <div className="space-y-4 text-left">
                 <div>
-                  <p className="text-[13px] font-medium uppercase tracking-wide text-muted-foreground/80 mb-2">
+                  <p className="text-[13px] font-medium uppercase tracking-wide text-muted-foreground/90 mb-2">
                     Top 3 Tasks by Context Switch
                   </p>
                   <div className="space-y-1">
@@ -1140,7 +1141,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <p className="text-[13px] font-medium uppercase tracking-wide text-muted-foreground/80 mb-2">
+                  <p className="text-[13px] font-medium uppercase tracking-wide text-muted-foreground/90 mb-2">
                     Most Recently Updated
                   </p>
                   <p className="text-sm text-foreground ml-2">
@@ -1149,7 +1150,7 @@ export default function App() {
                 </div>
 
                 <div className="pt-3 border-t border-border/30">
-                  <p className="text-sm text-muted-foreground/80 italic leading-relaxed">
+                  <p className="text-sm text-muted-foreground/90 italic leading-relaxed">
                     You've switched context {insightData?.contextSwitchTotal || 0} times across {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} today.
                   </p>
                 </div>
@@ -1222,7 +1223,7 @@ export default function App() {
             </div>
           </div>
           {/* Brand Signature Footer */}
-          <div className="text-[10px] text-muted-foreground/80 text-center py-1 tracking-widest uppercase">
+          <div className="text-[10px] text-muted-foreground/90 text-center py-1 tracking-widest uppercase">
             Delegate Lens · v1.0.0 · Cognitive Clarity Suite · Stable Release
           </div>
         </div>
@@ -1294,6 +1295,6 @@ export default function App() {
       `}</style>
       <SpeedInsights />
       <Analytics />
-    </div>
+    </main>
   );
 }

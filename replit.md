@@ -94,9 +94,29 @@ No authentication implemented; designed for single-user or trusted multi-user. F
 ### Type System
 - TypeScript with strict mode, path aliases, and shared types between client/server.
 
-## Recent Changes (v1.0.1)
-- **2025-10-30:** Added Vercel Analytics and Speed Insights integration for production monitoring.
-- **2025-10-30:** Implemented Open Graph and Twitter Card metadata for enhanced social media sharing.
-- **2025-10-30:** Generated custom OG preview image (1200x630px) with calm minimalist design.
-- **2025-10-29:** Fixed task history display order (now shows chronological: oldest→newest).
-- **2025-10-29:** Changed task creation behavior to prepend (top-left placement).
+## Accessibility Compliance
+The application meets **WCAG 2.1 AA** standards with comprehensive accessibility features:
+- **Semantic HTML:** Proper `<main>` landmark for screen reader navigation
+- **ARIA Support:** Descriptive labels on all interactive elements, proper `aria-hidden` on decorative icons
+- **Form Labels:** All inputs linked via `htmlFor` with proper label elements
+- **Focus Visibility:** 2px focus rings on all interactive elements (buttons, inputs, selects)
+- **Contrast Ratios:** Enhanced text contrast (muted-foreground/90-95) and background contrast (muted/20)
+- **Viewport Accessibility:** Allows pinch-to-zoom for low-vision users (no maximum-scale restriction)
+- **Status Indicators:** Color-coded with enhanced contrast (bg-green-100, bg-red-100)
+- **Keyboard Navigation:** Full keyboard access to all features
+
+## Recent Changes (v1.0.2)
+- **2025-10-31:** Accessibility Pass 3: Lighthouse compliance fixes
+  - Removed viewport zoom restriction (maximum-scale) for low-vision accessibility
+  - Added semantic `<main>` landmark for screen reader navigation
+  - Fixed prohibited ARIA attributes on priority indicator dots
+  - Enhanced text contrast ratios: muted-foreground/95, muted-foreground/90
+  - Improved status badge contrast: bg-green-100, bg-red-100
+  - Upgraded focus visibility to 2px rings site-wide
+- **2025-10-31:** Accessibility Pass 2: Enhanced labels, ARIA, contrast, focus visibility
+- **2025-10-31:** Accessibility Pass 1: Added aria-hidden to icons, improved contrast, visible focus states
+- **2025-10-30:** Added Vercel Analytics and Speed Insights integration for production monitoring
+- **2025-10-30:** Implemented Open Graph and Twitter Card metadata for enhanced social media sharing
+- **2025-10-30:** Generated custom OG preview image (1200x630px) with calm minimalist design
+- **2025-10-29:** Fixed task history display order (now shows chronological: oldest→newest)
+- **2025-10-29:** Changed task creation behavior to prepend (top-left placement)
