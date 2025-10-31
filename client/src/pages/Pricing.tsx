@@ -1,21 +1,18 @@
 import { useState } from "react";
-import { CreditCard, Zap, Star, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Pricing() {
-  const [loading, setLoading] = useState<"standard" | "pro" | "lifetime" | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleCheckout(type: "standard" | "pro" | "lifetime") {
-    setLoading(type);
+    setLoading(true);
     try {
-      const endpoint =
-        type === "lifetime"
-          ? "/api/create-lifetime-session"
-          : type === "pro"
-          ? "/api/create-pro-session"
-          : "/api/create-standard-session";
-      
-      const res = await fetch(endpoint, { method: "POST" });
+      const endpointMap = {
+        standard: "/api/create-standard-session",
+        pro: "/api/create-pro-session",
+        lifetime: "/api/create-lifetime-session",
+      };
+      const res = await fetch(endpointMap[type], { method: "POST" });
       
       if (!res.ok) {
         throw new Error("Failed to create checkout session");
@@ -25,14 +22,14 @@ export default function Pricing() {
       window.location.href = url;
     } catch (error) {
       console.error("Checkout error:", error);
-      setLoading(null);
+      setLoading(false);
       alert("Unable to start checkout. Please try again or contact support.");
     }
   }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
-      <div className="max-w-7xl w-full">
+      <div className="max-w-6xl w-full">
         <div className="text-center mb-12">
           <Link href="/">
             <a className="text-sm text-muted-foreground/95 hover:text-foreground transition-colors mb-4 inline-block" data-testid="link-back-home">
@@ -40,162 +37,62 @@ export default function Pricing() {
             </a>
           </Link>
           <h1 className="text-4xl font-bold text-foreground mb-4" role="heading" aria-level={1}>
-            Choose Your Delegate Lens Plan
+            Access Delegate Lens
           </h1>
           <p className="text-lg text-muted-foreground/95 max-w-2xl mx-auto">
-            Unlock calm, focused task delegation with flexible pricing to match your needs.
+            Choose the plan that fits your workflow
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {/* Standard Plan */}
-          <div className="bg-card border border-card-border rounded-xl p-8 hover-elevate transition-all duration-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-primary" aria-hidden="true" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-card-foreground">Standard</h2>
-                <p className="text-sm text-muted-foreground/95">For individuals</p>
-              </div>
-            </div>
-            
-            <div className="mb-6">
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-card-foreground">$45</span>
-                <span className="text-muted-foreground/95">/month</span>
-              </div>
-              <p className="text-xs text-muted-foreground/95 mt-1">Billed as £35/mo</p>
-            </div>
-
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Full access to all features</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Cancel anytime</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Cognitive Trace metrics</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Focus & Presentation modes</span>
-              </li>
-            </ul>
-
+        <div className="flex flex-wrap justify-center gap-8">
+          <div className="bg-card border border-card-border shadow-sm rounded-xl p-6 w-72 hover-elevate transition-all duration-200">
+            <h2 className="text-2xl font-semibold text-card-foreground mb-2">Standard</h2>
+            <p className="text-muted-foreground/95 mb-4">Essential executive dashboard</p>
+            <p className="text-3xl font-bold text-card-foreground mb-6">
+              $45<span className="text-base font-normal text-muted-foreground/95">/mo</span>
+            </p>
             <button
-              className="w-full bg-primary text-primary-foreground font-medium py-3 rounded-lg hover-elevate active-elevate-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading !== null}
               onClick={() => handleCheckout("standard")}
+              disabled={loading}
+              className="bg-foreground text-background px-6 py-3 rounded-lg w-full font-medium hover-elevate active-elevate-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="button-checkout-standard"
             >
-              {loading === "standard" ? "Loading..." : "Start Standard"}
+              Start Standard
             </button>
           </div>
 
-          {/* Pro Plan */}
-          <div className="bg-card border-2 border-primary/40 rounded-xl p-8 hover-elevate transition-all duration-200 relative">
+          <div className="bg-card border-2 border-primary shadow-lg rounded-xl p-6 w-72 hover-elevate transition-all duration-200 relative">
             <div className="absolute -top-3 right-6 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
               POPULAR
             </div>
-            
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Star className="w-6 h-6 text-primary" aria-hidden="true" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-card-foreground">Pro</h2>
-                <p className="text-sm text-muted-foreground/95">For power users</p>
-              </div>
-            </div>
-            
-            <div className="mb-6">
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-card-foreground">$89</span>
-                <span className="text-muted-foreground/95">/month</span>
-              </div>
-              <p className="text-xs text-muted-foreground/95 mt-1">Billed as £69/mo</p>
-            </div>
-
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Everything in Standard</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Advanced analytics</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Priority support</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Early access to new features</span>
-              </li>
-            </ul>
-
+            <h2 className="text-2xl font-semibold text-primary mb-2">Pro</h2>
+            <p className="text-muted-foreground/95 mb-4">Priority access + analytics suite</p>
+            <p className="text-3xl font-bold text-card-foreground mb-6">
+              $89<span className="text-base font-normal text-muted-foreground/95">/mo</span>
+            </p>
             <button
-              className="w-full bg-primary text-primary-foreground font-medium py-3 rounded-lg hover-elevate active-elevate-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading !== null}
               onClick={() => handleCheckout("pro")}
+              disabled={loading}
+              className="bg-primary text-primary-foreground px-6 py-3 rounded-lg w-full font-medium hover-elevate active-elevate-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="button-checkout-pro"
             >
-              {loading === "pro" ? "Loading..." : "Start Pro"}
+              Upgrade to Pro
             </button>
           </div>
 
-          {/* Lifetime License */}
-          <div className="bg-card border border-card-border rounded-xl p-8 hover-elevate transition-all duration-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Zap className="w-6 h-6 text-primary" aria-hidden="true" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-card-foreground">Lifetime</h2>
-                <p className="text-sm text-muted-foreground/95">One-time payment</p>
-              </div>
-            </div>
-            
-            <div className="mb-6">
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-card-foreground">$445</span>
-                <span className="text-muted-foreground/95">forever</span>
-              </div>
-              <p className="text-xs text-muted-foreground/95 mt-1">Billed as £349 once</p>
-            </div>
-
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Everything in Pro</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Lifetime updates & support</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">Priority feature requests</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <span className="text-sm text-muted-foreground/95">No recurring charges ever</span>
-              </li>
-            </ul>
-
+          <div className="bg-card border border-card-border shadow-sm rounded-xl p-6 w-72 hover-elevate transition-all duration-200">
+            <h2 className="text-2xl font-semibold text-card-foreground mb-2">Lifetime</h2>
+            <p className="text-muted-foreground/95 mb-4">Lifetime access, one-time payment</p>
+            <p className="text-3xl font-bold text-card-foreground mb-6">
+              $445<span className="text-base font-normal text-muted-foreground/95"> one-time</span>
+            </p>
             <button
-              className="w-full bg-primary text-primary-foreground font-medium py-3 rounded-lg hover-elevate active-elevate-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading !== null}
               onClick={() => handleCheckout("lifetime")}
+              disabled={loading}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg w-full font-medium hover-elevate active-elevate-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="button-checkout-lifetime"
             >
-              {loading === "lifetime" ? "Loading..." : "Buy Lifetime"}
+              Buy Lifetime
             </button>
           </div>
         </div>
