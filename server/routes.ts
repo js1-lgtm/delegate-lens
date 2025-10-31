@@ -9,12 +9,19 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2025-10-29.clover",
-    })
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Get base URL from environment or use Replit domain
+  const getBaseUrl = () => {
+    if (process.env.REPLIT_DOMAINS) {
+      const domains = process.env.REPLIT_DOMAINS.split(',');
+      return `https://${domains[0]}`;
+    }
+    return 'http://localhost:5000';
+  };
+
   // Stripe Checkout Sessions - Monthly Subscription (£35/mo)
   app.post("/api/create-subscription-session", async (req, res) => {
     if (!stripe) {
@@ -22,6 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
+      const baseUrl = getBaseUrl();
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         payment_method_types: ["card"],
@@ -39,8 +47,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             quantity: 1,
           },
         ],
-        success_url: `${req.headers.origin || 'http://localhost:5000'}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin || 'http://localhost:5000'}/cancel`,
+        success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/cancel`,
       });
       
       res.json({ url: session.url });
@@ -57,6 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
+      const baseUrl = getBaseUrl();
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
         payment_method_types: ["card"],
@@ -73,8 +82,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             quantity: 1,
           },
         ],
-        success_url: `${req.headers.origin || 'http://localhost:5000'}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin || 'http://localhost:5000'}/cancel`,
+        success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/cancel`,
       });
       
       res.json({ url: session.url });

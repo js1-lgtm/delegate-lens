@@ -13,7 +13,9 @@ Preferred communication style: Simple, everyday language.
 
 **Design System:** Modern productivity aesthetic (inspired by Linear, Things, Apple HIG) with Inter/SF Pro Display typography, responsive grid (max-w-6xl), card-based design with rounded-xl corners, subtle shadows, and a neutral HSL-based color scheme.
 
-**Key Components:** Dashboard, TaskCard, TaskForm (dialog-based), FilterBar, EmptyState.
+**Routing:** Multi-page application using wouter for client-side routing with routes for Dashboard (/), Pricing (/pricing), Success (/success), and Cancel (/cancel).
+
+**Key Components:** Dashboard, TaskCard, TaskForm (dialog-based), FilterBar, EmptyState, Pricing, Success, Cancel.
 
 ### Backend Architecture
 **Technology Stack:** Node.js, Express.js, TypeScript (ES modules), Vite middleware for HMR, esbuild for production.
@@ -51,6 +53,34 @@ Task {
 ### Authentication and Authorization
 No authentication implemented; designed for single-user or trusted multi-user. Future plans include session management, user authentication, and role-based access control.
 
+### Payment and Monetization
+**Stripe Integration:** Full payment processing using Stripe Checkout Sessions (blueprint:javascript_stripe integration).
+
+**Pricing Model:**
+- **Monthly Subscription:** £35/month recurring (subscription mode)
+- **Lifetime License:** £349 one-time payment (payment mode)
+
+**Payment Flow:**
+1. User navigates to /pricing page from Dashboard header
+2. Clicks checkout button for desired plan
+3. Backend creates Stripe Checkout Session with secure redirect URLs
+4. User completes payment on Stripe-hosted checkout page
+5. Redirects to /success (with session_id) or /cancel page
+
+**Security:**
+- Base URLs for redirects sourced from trusted REPLIT_DOMAINS environment variable
+- No client-controlled redirect targets (prevents open redirect vulnerabilities)
+- Stripe API initialized without hardcoded API version (uses account default)
+
+**Required Environment Variables:**
+- `STRIPE_SECRET_KEY`: Stripe secret API key (from stripe.com/dashboard/apikeys)
+- `VITE_STRIPE_PUBLIC_KEY`: Stripe publishable key for frontend (optional, not currently used)
+- `REPLIT_DOMAINS`: Automatically provided by Replit for production redirects
+
+**API Endpoints:**
+- `POST /api/create-subscription-session`: Creates monthly subscription checkout
+- `POST /api/create-lifetime-session`: Creates lifetime license checkout
+
 ## External Dependencies
 
 ### Third-Party UI Libraries
@@ -81,6 +111,12 @@ No authentication implemented; designed for single-user or trusted multi-user. F
 - `date-fns`: Date manipulation.
 - `nanoid`: Unique ID generation.
 - `@tanstack/react-query`: Async state management (configured).
+- `wouter`: Lightweight routing library for React SPAs.
+
+### Payment Processing
+- `stripe`: Stripe Node.js library for payment processing.
+- `@stripe/stripe-js`: Stripe JavaScript SDK for frontend (installed but not currently used).
+- `@stripe/react-stripe-js`: React components for Stripe (installed but not currently used).
 
 ### Analytics and Monitoring
 - `@vercel/analytics`: Web analytics for tracking page views and user interactions (integrated in App.tsx).
@@ -106,7 +142,16 @@ The application meets **WCAG 2.1 AA** standards with comprehensive accessibility
 - **Status Indicators:** Color-coded with enhanced contrast (bg-green-100, bg-red-100)
 - **Keyboard Navigation:** Full keyboard access to all features with visible focus indicators
 
-## Recent Changes (v1.0.2)
+## Recent Changes (v1.1.0)
+- **2025-10-31:** Stripe Payment Integration: Added monetization with £35/month subscription and £349 lifetime license
+  - Implemented Stripe Checkout Sessions for secure payment processing
+  - Created Pricing page with two pricing cards and checkout buttons
+  - Created Success and Cancel pages for payment flow completion
+  - Restructured app with wouter routing: extracted Dashboard component from App.tsx
+  - Added Pricing link to Dashboard header for easy access
+  - Security: Base URLs sourced from REPLIT_DOMAINS (prevents open redirect vulnerabilities)
+  - Backend: Two API endpoints for subscription and lifetime checkout session creation
+  - Stripe integration uses blueprint:javascript_stripe for secure key management
 - **2025-10-31:** Semantic Polish Pass: Screen reader & keyboard navigation enhancements
   - Added "Skip to Content" link (visible on focus) for keyboard users
   - Added id="main-content" anchor to main landmark for skip link target
