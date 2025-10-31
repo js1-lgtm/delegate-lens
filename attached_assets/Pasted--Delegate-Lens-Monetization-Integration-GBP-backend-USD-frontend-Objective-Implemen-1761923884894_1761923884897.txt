@@ -1,0 +1,99 @@
+# === Delegate Lens – Monetization Integration (GBP backend, USD frontend) ===
+# Objective: Implement 3 pricing tiers with Stripe integration, webhook automation, and live checkout buttons.
+# All backend charges occur in GBP (for UK accounting).
+# All UI prices shown in USD (approx. rounded equivalents).
+
+# === 1. Install Stripe SDKs ===
+npm install stripe @stripe/stripe-js
+
+# === 2. Create API endpoints ===
+# Location: /server/routes/payments.ts
+# Three endpoints (Standard, Pro, and Lifetime).
+
+import express from "express";
+import Stripe from "stripe";
+
+const router = express.Router();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+# --- Standard £35/mo (~$45 USD) subscription ---
+router.post("/create-standard-session", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "gbp",
+            product_data: { name: "Delegate Lens Standard Monthly" },
+            unit_amount: 3500, // £35.00
+            recurring: { interval: "month" },
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: "https://delegate-lens.vercel.app/success",
+      cancel_url: "https://delegate-lens.vercel.app/cancel",
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create Standard session" });
+  }
+});
+
+# --- Pro £69/mo (~$89 USD) subscription ---
+router.post("/create-pro-session", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "gbp",
+            product_data: { name: "Delegate Lens Pro Monthly" },
+            unit_amount: 6900, // £69.00
+            recurring: { interval: "month" },
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: "https://delegate-lens.vercel.app/success",
+      cancel_url: "https://delegate-lens.vercel.app/cancel",
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create Pro session" });
+  }
+});
+
+# --- Lifetime £349 (~$445 USD) one-time payment ---
+router.post("/create-lifetime-session", async (req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "gbp",
+            product_data: { name: "Delegate Lens Lifetime License" },
+            unit_amount: 34900, // £349.00
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: "https://delegate-lens.vercel.app/success",
+      cancel_url: "https://delegate-lens.vercel.app/cancel",
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create Lifetime session" });
+  }
+});
+
+export default router;

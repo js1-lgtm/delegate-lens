@@ -26,8 +26,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return 'http://localhost:5000';
   };
 
-  // Stripe Checkout Sessions - Monthly Subscription (£35/mo)
-  app.post("/api/create-subscription-session", async (req, res) => {
+  // Stripe Checkout Sessions - Standard Plan (£35/mo, displayed as ~$45 USD)
+  app.post("/api/create-standard-session", async (req, res) => {
     if (!stripe) {
       return res.status(500).json({ error: "Stripe not configured" });
     }
@@ -42,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             price_data: {
               currency: "gbp",
               product_data: { 
-                name: "Delegate Lens Monthly Subscription",
+                name: "Delegate Lens Standard Monthly",
                 description: "Access to Delegate Lens task delegation dashboard"
               },
               unit_amount: 3500, // £35.00
@@ -57,12 +57,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ url: session.url });
     } catch (err: any) {
-      console.error("Stripe subscription session error:", err);
+      console.error("Stripe standard session error:", err);
       res.status(500).json({ error: "Failed to create session" });
     }
   });
 
-  // Stripe Checkout Sessions - Lifetime License (£349 one-time)
+  // Stripe Checkout Sessions - Pro Plan (£69/mo, displayed as ~$89 USD)
+  app.post("/api/create-pro-session", async (req, res) => {
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
+
+    try {
+      const baseUrl = getBaseUrl();
+      const session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "gbp",
+              product_data: { 
+                name: "Delegate Lens Pro Monthly",
+                description: "Advanced features for power users"
+              },
+              unit_amount: 6900, // £69.00
+              recurring: { interval: "month" },
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/cancel`,
+      });
+      
+      res.json({ url: session.url });
+    } catch (err: any) {
+      console.error("Stripe pro session error:", err);
+      res.status(500).json({ error: "Failed to create session" });
+    }
+  });
+
+  // Stripe Checkout Sessions - Lifetime License (£349 one-time, displayed as ~$445 USD)
   app.post("/api/create-lifetime-session", async (req, res) => {
     if (!stripe) {
       return res.status(500).json({ error: "Stripe not configured" });

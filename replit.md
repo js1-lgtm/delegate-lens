@@ -56,9 +56,11 @@ No authentication implemented; designed for single-user or trusted multi-user. F
 ### Payment and Monetization
 **Stripe Integration:** Full payment processing using Stripe Checkout Sessions (blueprint:javascript_stripe integration).
 
-**Pricing Model:**
-- **Monthly Subscription:** £35/month recurring (subscription mode)
-- **Lifetime License:** £349 one-time payment (payment mode)
+**Pricing Model (3 Tiers):**
+Backend charges in GBP (for UK accounting), frontend displays USD equivalents.
+- **Standard Plan:** £35/month recurring (displayed as ~$45 USD/month)
+- **Pro Plan:** £69/month recurring (displayed as ~$89 USD/month)
+- **Lifetime License:** £349 one-time payment (displayed as ~$445 USD once)
 
 **Payment Flow:**
 1. User navigates to /pricing page from Dashboard header
@@ -79,8 +81,9 @@ No authentication implemented; designed for single-user or trusted multi-user. F
 - `REPLIT_DOMAINS`: Automatically provided by Replit for production redirects
 
 **API Endpoints:**
-- `POST /api/create-subscription-session`: Creates monthly subscription checkout
-- `POST /api/create-lifetime-session`: Creates lifetime license checkout
+- `POST /api/create-standard-session`: Creates Standard plan (£35/mo) subscription checkout
+- `POST /api/create-pro-session`: Creates Pro plan (£69/mo) subscription checkout
+- `POST /api/create-lifetime-session`: Creates Lifetime license (£349 once) checkout
 - `POST /api/webhook`: Stripe webhook endpoint for payment event notifications
 
 **Webhook Configuration:**
@@ -160,14 +163,21 @@ The application meets **WCAG 2.1 AA** standards with comprehensive accessibility
 - **Keyboard Navigation:** Full keyboard access to all features with visible focus indicators
 
 ## Recent Changes (v1.1.0)
-- **2025-10-31:** Stripe Payment Integration: Added monetization with £35/month subscription and £349 lifetime license
-  - Implemented Stripe Checkout Sessions for secure payment processing
-  - Created Pricing page with two pricing cards and checkout buttons
-  - Created Success and Cancel pages for payment flow completion
+- **2025-10-31:** Three-Tier Pricing Implementation: Updated to Standard/Pro/Lifetime model
+  - Added Pro plan: £69/month (displayed as ~$89 USD/month) for power users
+  - Updated pricing page to 3-column layout with USD frontend display, GBP backend charges
+  - Backend endpoints: /api/create-standard-session, /api/create-pro-session, /api/create-lifetime-session
+  - Pricing: Standard £35/mo (~$45), Pro £69/mo (~$89), Lifetime £349 once (~$445)
+- **2025-10-31:** Stripe Webhook Integration: Added payment event handling
+  - Webhook endpoint (/api/webhook) handles checkout completion, subscription lifecycle events
+  - Signature verification using STRIPE_WEBHOOK_SECRET for security
+  - Comprehensive event logging for payment monitoring
+- **2025-10-31:** Stripe Payment Integration: Added monetization with Stripe Checkout Sessions
+  - Implemented secure payment processing with three pricing tiers
+  - Created Pricing page with checkout buttons and payment flow pages (Success/Cancel)
   - Restructured app with wouter routing: extracted Dashboard component from App.tsx
   - Added Pricing link to Dashboard header for easy access
   - Security: Base URLs sourced from REPLIT_DOMAINS (prevents open redirect vulnerabilities)
-  - Backend: Two API endpoints for subscription and lifetime checkout session creation
   - Stripe integration uses blueprint:javascript_stripe for secure key management
 - **2025-10-31:** Semantic Polish Pass: Screen reader & keyboard navigation enhancements
   - Added "Skip to Content" link (visible on focus) for keyboard users
