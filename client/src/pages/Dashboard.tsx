@@ -699,6 +699,14 @@ export default function Dashboard() {
           </div>
           {!presentationMode && (
             <div className="flex items-center gap-2">
+              <Link 
+                href="/pricing"
+                data-testid="link-pricing"
+                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/40"
+                aria-label="View pricing plans"
+              >
+                Pricing
+              </Link>
               <button
                 data-testid="button-present"
                 onClick={togglePresentationMode}
