@@ -1,7 +1,7 @@
 // Delegate Lens v1.0.0 · Cognitive Clarity Suite · Stable Release
 // Finalized: 2025-10-29 · Replit QA + OpenAI Chat Review
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
 import { CheckCircle2, Clock, AlertCircle, Plus, Focus, Activity } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
@@ -703,28 +703,28 @@ export default function App() {
               <button
                 data-testid="button-present"
                 onClick={togglePresentationMode}
-                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
                 aria-label="Enter presentation mode"
                 aria-pressed={presentationMode}
               >
-                <CheckCircle2 className="w-4 h-4" />
+                <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                 Present
               </button>
               <button
                 data-testid="button-insight"
                 onClick={toggleInsight}
-                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+                className="flex items-center gap-2 px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
                 aria-label={insightVisible ? "Close insight overlay" : "Open insight overlay"}
                 aria-controls="insight-overlay"
                 aria-expanded={insightVisible}
               >
-                <Activity className="w-4 h-4" />
+                <Activity className="w-4 h-4" aria-hidden="true" />
                 Insight
               </button>
               <button
                 data-testid="button-focus-mode"
                 onClick={toggleFocusMode}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border/30 transition-all duration-200 ease-out ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border/30 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40 ${
                   focusMode
                     ? "bg-foreground text-background border-foreground"
                     : "bg-background text-foreground hover:bg-muted"
@@ -732,16 +732,16 @@ export default function App() {
                 aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
                 aria-pressed={focusMode}
               >
-                <Focus className="w-4 h-4" />
+                <Focus className="w-4 h-4" aria-hidden="true" />
                 Focus
               </button>
               <button
                 data-testid="button-new-task"
                 onClick={() => setShowNewTaskForm(!showNewTaskForm)}
-                className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out"
+                className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
                 aria-label="Create new task"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4" aria-hidden="true" />
                 New Task
               </button>
             </div>
@@ -750,7 +750,7 @@ export default function App() {
             <button
               data-testid="button-exit-presentation"
               onClick={togglePresentationMode}
-              className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium opacity-90 transition-all duration-200 ease-out"
+              className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium opacity-90 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
               aria-label="Exit presentation mode"
               aria-pressed={presentationMode}
             >
@@ -773,7 +773,7 @@ export default function App() {
         {showNewTaskForm && !presentationMode && (
           <div
             data-testid="form-new-task"
-            className="mb-6 p-6 bg-muted/30 border border-border/30 rounded-lg"
+            className="mb-6 p-6 bg-muted/20 border border-border/30 rounded-lg"
           >
             <h3 className="text-sm font-medium text-foreground mb-3">
               Create New Task
@@ -893,7 +893,7 @@ export default function App() {
                 <button
                   data-testid="button-submit-task"
                   type="submit"
-                  className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out"
+                  className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
                   aria-label="Submit new task"
                 >
                   Create Task
@@ -911,7 +911,7 @@ export default function App() {
                       priority: "Normal",
                     });
                   }}
-                  className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out"
+                  className="px-4 py-2 bg-background text-foreground border border-border/30 rounded-lg text-sm font-medium hover:bg-muted transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
                   aria-label="Cancel new task"
                 >
                   Cancel
@@ -923,7 +923,7 @@ export default function App() {
 
         {!focusMode && !presentationMode && (
           <div className="mb-6 flex gap-3 flex-wrap">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/20 rounded-lg">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Total
               </span>
@@ -932,8 +932,8 @@ export default function App() {
               </span>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
-              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/20 rounded-lg">
+              <Clock className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 In Progress
               </span>
@@ -942,8 +942,8 @@ export default function App() {
               </span>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
-              <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/20 rounded-lg">
+              <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Done
               </span>
@@ -952,8 +952,8 @@ export default function App() {
               </span>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-lg">
-              <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/20 rounded-lg">
+              <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Blocked
               </span>
@@ -1030,7 +1030,7 @@ export default function App() {
                     </h2>
                   </div>
                   <p
-                    className="text-xs text-muted-foreground/70 ml-4 mb-3"
+                    className="text-xs text-muted-foreground/90 ml-4 mb-3"
                     data-testid={`text-updated-${task.id}`}
                   >
                     {getRelativeTime(task.lastUpdated)}
@@ -1074,7 +1074,7 @@ export default function App() {
                     <button
                       data-testid={`button-view-history-${task.id}`}
                       onClick={() => toggleHistory(task.id)}
-                      className="text-[11px] text-muted-foreground/70 hover:text-muted-foreground transition-all duration-200 ease-out"
+                      className="text-[11px] text-muted-foreground/90 hover:text-muted-foreground transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
                       aria-label={`${historyVisible[task.id] ? 'Hide' : 'View'} history for ${task.title}`}
                     >
                       {historyVisible[task.id] ? 'Hide History' : 'View History'}
@@ -1088,7 +1088,7 @@ export default function App() {
                         {task.history.slice(-3).map((entry, idx) => (
                           <div
                             key={idx}
-                            className="text-[11px] text-muted-foreground/70 ml-2"
+                            className="text-[11px] text-muted-foreground/90 ml-2"
                           >
                             • {formatHistoryDate(entry.date)} – {entry.oldStatus} → {entry.newStatus}
                           </div>
@@ -1159,7 +1159,7 @@ export default function App() {
             <button
               data-testid="button-close-insight"
               onClick={() => setInsightVisible(false)}
-              className="w-full px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out"
+              className="w-full px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-foreground/90 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
               aria-label="Close insight overlay"
             >
               Close
@@ -1170,7 +1170,7 @@ export default function App() {
 
       {/* Presentation Mode: Merged Trace + Insight Panel */}
       {presentationMode && (
-        <div className="fixed bottom-0 left-0 right-0 bg-muted/30 border-t border-border/40 rounded-t-lg">
+        <div className="fixed bottom-0 left-0 right-0 bg-muted/20 border-t border-border/40 rounded-t-lg">
           <div className="max-w-6xl mx-auto px-4 py-3" role="status" aria-live="polite">
             <h2 className="sr-only">Cognitive Trace Metrics</h2>
             <div className="grid grid-cols-2 gap-8 text-[14px] text-muted-foreground font-normal tracking-tight leading-snug cursor-default">
@@ -1222,7 +1222,7 @@ export default function App() {
             </div>
           </div>
           {/* Brand Signature Footer */}
-          <div className="text-[10px] text-muted-foreground/50 text-center py-1 tracking-widest uppercase">
+          <div className="text-[10px] text-muted-foreground/80 text-center py-1 tracking-widest uppercase">
             Delegate Lens · v1.0.0 · Cognitive Clarity Suite · Stable Release
           </div>
         </div>
@@ -1234,13 +1234,13 @@ export default function App() {
           <button
             data-testid="button-toggle-trace"
             onClick={toggleTrace}
-            className="w-full bg-muted/30 border-t border-border/40 py-2 px-4 text-xs text-muted-foreground hover:bg-muted/50 transition-all duration-200 ease-out"
+            className="w-full bg-muted/20 border-t border-border/40 py-2 px-4 text-xs text-muted-foreground hover:bg-muted/50 transition-all duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-primary/40"
             aria-label={traceVisible ? "Hide cognitive trace" : "Show cognitive trace"}
             aria-controls="cognitive-trace-panel"
             aria-expanded={traceVisible}
           >
             <div className="max-w-6xl mx-auto flex items-center justify-center gap-2">
-              <Activity className="w-3.5 h-3.5" />
+              <Activity className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Trace</span>
             </div>
           </button>
@@ -1249,7 +1249,7 @@ export default function App() {
             <div
               id="cognitive-trace-panel"
               data-testid="panel-cognitive-trace"
-              className="bg-muted/30 border-t border-border/40 rounded-t-lg transition-opacity duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] opacity-100"
+              className="bg-muted/20 border-t border-border/40 rounded-t-lg transition-opacity duration-200 ease-[cubic-bezier(0.25,0.1,0.25,1)] opacity-100"
               role="status"
             >
               <div className="max-w-6xl mx-auto px-4 py-3">
