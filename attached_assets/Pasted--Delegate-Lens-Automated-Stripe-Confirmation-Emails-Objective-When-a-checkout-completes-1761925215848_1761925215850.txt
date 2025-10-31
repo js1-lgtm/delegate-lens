@@ -1,0 +1,69 @@
+# === Delegate Lens: Automated Stripe Confirmation Emails ===
+# Objective: When a checkout completes, send an automated thank-you and receipt email via Nodemailer.
+# (All GBP backend, USD-facing prices preserved)
+
+# === 1. Install Dependencies ===
+npm install nodemailer
+
+# === 2. Add environment variables in Replit ===
+# These are needed for authenticated mail sending.
+# (Use Gmail, Outlook, or custom domain SMTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=465
+EMAIL_USER=delegatelens@gmail.com
+EMAIL_PASS=app_specific_password
+
+# === 3. Update /server/routes/webhooks.ts ===
+# Extend the existing Stripe webhook to trigger an email on successful payment.
+
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+router.post("/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error("⚠️ Webhook error:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const email = session.customer_details?.email;
+    const productName = session.line_items?.[0]?.description || "Delegate Lens Access";
+
+    if (email) {
+      try {
+        await transporter.sendMail({
+          from: `"Delegate Lens" <${process.env.EMAIL_USER}>`,
+          to: email,
+          subject: "Your Delegate Lens Access Confirmation",
+          html: `
+            <h2>Welcome to Delegate Lens</h2>
+            <p>Thank you for your purchase of <strong>${productName}</strong>.</p>
+            <p>You now have access to your Delegate Lens dashboard, designed for cognitive clarity and focused delegation.</p>
+            <p>Login at <a href="https://delegate-lens.vercel.app">delegate-lens.vercel.app</a></p>
+            <hr/>
+            <p><small>This is an automated confirmation. For any inquiries, please contact support@delegatelens.com</small></p>
+          `,
+        });
+        console.log("📧 Confirmation email sent to", email);
+      } catch (mailErr) {
+        console.error("❌ Email send error:", mailErr);
+      }
+    }
+  }
+
+  res.json({ received: true });
+});
